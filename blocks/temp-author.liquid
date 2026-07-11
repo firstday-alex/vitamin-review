@@ -1,0 +1,334 @@
+{%- liquid
+  assign speed = section.settings.speed | default: 30
+  assign gap_d = section.settings.gap_desktop | default: 60
+  assign gap_m = section.settings.gap_mobile | default: 40
+  assign font_size_d = section.settings.font_size_desktop | default: 14
+  assign font_size_m = section.settings.font_size_mobile | default: 12
+  assign font_family = section.settings.font_family
+  assign font_weight = section.settings.font_weight | default: 600
+  assign text_transform = section.settings.text_transform | default: 'none'
+  assign letter_spacing = section.settings.letter_spacing | default: 0
+  assign bg_color = section.settings.bg_color | default: '#486CED'
+  assign text_color = section.settings.text_color | default: '#ffffff'
+  assign pad_top = section.settings.padding_top | default: 10
+  assign pad_bottom = section.settings.padding_bottom | default: 10
+  assign item_size_d = section.settings.item_size_desktop | default: 20
+  assign item_size_m = section.settings.item_size_mobile | default: 16
+  assign pause_on_hover = section.settings.pause_on_hover
+  assign direction = section.settings.direction | default: 'left'
+  assign repeats = section.settings.repeats | default: 6
+-%}
+
+{%- capture ticker_items -%}{% content_for 'blocks' %}{%- endcapture -%}
+
+{%- if section.blocks.size > 0 -%}
+<section
+  class="a-ticker{% if pause_on_hover %} a-ticker--pause-hover{% endif %}"
+  style="
+    --at-bg: {{ bg_color }};
+    --at-text: {{ text_color }};
+    --at-font-size-d: {{ font_size_d }}px;
+    --at-font-size-m: {{ font_size_m }}px;
+    --at-font-weight: {{ font_weight }};
+    --at-font-family: {{ font_family | default: 'inherit' }};
+    --at-text-transform: {{ text_transform }};
+    --at-letter-spacing: {{ letter_spacing }}em;
+    --at-gap-d: {{ gap_d }}px;
+    --at-gap-m: {{ gap_m }}px;
+    --at-pad-top: {{ pad_top }}px;
+    --at-pad-bottom: {{ pad_bottom }}px;
+    --at-speed: {{ speed }}s;
+    --at-item-size-d: {{ item_size_d }}px;
+    --at-item-size-m: {{ item_size_m }}px;
+    --at-direction: {% if direction == 'right' %}reverse{% else %}normal{% endif %};
+  "
+>
+  <div class="a-ticker__track" aria-hidden="true">
+    <div class="a-ticker__slide">{%- for r in (1..repeats) -%}{{ ticker_items }}{%- endfor -%}</div>
+    <div class="a-ticker__slide" aria-hidden="true">{%- for r in (1..repeats) -%}{{ ticker_items }}{%- endfor -%}</div>
+  </div>
+</section>
+{%- endif -%}
+
+{% stylesheet %}
+.a-ticker {
+  background: var(--at-bg);
+  color: var(--at-text);
+  font-family: var(--at-font-family, inherit);
+  font-size: var(--at-font-size-d);
+  font-weight: var(--at-font-weight);
+  text-transform: var(--at-text-transform);
+  letter-spacing: var(--at-letter-spacing);
+  line-height: 1;
+  padding: var(--at-pad-top) 0 var(--at-pad-bottom);
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.a-ticker__track {
+  display: flex;
+  width: max-content;
+  animation: at-scroll var(--at-speed) linear infinite;
+  animation-direction: var(--at-direction, normal);
+}
+
+.a-ticker--pause-hover:hover .a-ticker__track {
+  animation-play-state: paused;
+}
+
+.a-ticker__slide {
+  display: flex;
+  align-items: center;
+  gap: var(--at-gap-d);
+  flex-shrink: 0;
+  padding-right: var(--at-gap-d);
+}
+
+.a-ticker .a-ticker__text {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.a-ticker .a-ticker__img {
+  flex-shrink: 0;
+  height: var(--at-img-d, var(--at-item-size-d));
+  width: auto;
+  max-height: var(--at-img-d, var(--at-item-size-d));
+  display: block;
+  object-fit: contain;
+}
+
+.a-ticker .a-ticker__emoji {
+  flex-shrink: 0;
+  font-size: var(--at-item-size-d);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+@media screen and (max-width: 749px) {
+  .a-ticker {
+    font-size: var(--at-font-size-m);
+  }
+  .a-ticker__slide {
+    gap: var(--at-gap-m);
+    padding-right: var(--at-gap-m);
+  }
+  .a-ticker .a-ticker__img {
+    height: var(--at-img-m, var(--at-item-size-m));
+    max-height: var(--at-img-m, var(--at-item-size-m));
+  }
+  .a-ticker .a-ticker__emoji {
+    font-size: var(--at-item-size-m);
+  }
+}
+
+@keyframes at-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a-ticker__track {
+    animation-play-state: paused;
+  }
+}
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Announcement Ticker",
+  "tag": "section",
+  "class": "section-announcement-ticker",
+  "blocks": [{ "type": "@theme" }],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Speed & Direction"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Scroll speed (seconds per loop)",
+      "info": "Lower = faster. A full loop takes this many seconds.",
+      "min": 5,
+      "max": 120,
+      "step": 5,
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "Scroll direction",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "repeats",
+      "label": "Times to repeat sequence",
+      "info": "The full block sequence is rendered this many times per scroll loop. Increase if you see gaps.",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 6
+    },
+    {
+      "type": "header",
+      "content": "Item size (default)"
+    },
+    {
+      "type": "range",
+      "id": "item_size_desktop",
+      "label": "Image / emoji height - desktop (px)",
+      "min": 8,
+      "max": 80,
+      "step": 1,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "item_size_mobile",
+      "label": "Image / emoji height - mobile (px)",
+      "min": 8,
+      "max": 60,
+      "step": 1,
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "text",
+      "id": "font_family",
+      "label": "Font family",
+      "info": "Leave blank to inherit."
+    },
+    {
+      "type": "range",
+      "id": "font_size_desktop",
+      "label": "Font size - desktop (px)",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "font_size_mobile",
+      "label": "Font size - mobile (px)",
+      "min": 8,
+      "max": 24,
+      "step": 1,
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "font_weight",
+      "label": "Font weight",
+      "min": 300,
+      "max": 900,
+      "step": 100,
+      "default": 600
+    },
+    {
+      "type": "select",
+      "id": "text_transform",
+      "label": "Text transform",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "uppercase", "label": "Uppercase" },
+        { "value": "lowercase", "label": "Lowercase" },
+        { "value": "capitalize", "label": "Capitalize" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing (em x 100)",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Gap between items"
+    },
+    {
+      "type": "range",
+      "id": "gap_desktop",
+      "label": "Gap - desktop (px)",
+      "min": 4,
+      "max": 120,
+      "step": 2,
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "label": "Gap - mobile (px)",
+      "min": 4,
+      "max": 80,
+      "step": 2,
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background",
+      "default": "#486CED"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding top (px)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding bottom (px)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 10
+    }
+  ],
+  "presets": [
+    {
+      "name": "Temp: Marquee Ticker",
+      "category": "Temporary"
+    }
+  ]
+}
+{% endschema %}

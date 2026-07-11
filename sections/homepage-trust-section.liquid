@@ -1,0 +1,1202 @@
+{%- comment -%}
+  Homepage Trust Section
+  Carousel with trust items (testimonials, images, videos, media features) and statistics cards
+  Desktop: horizontal carousel with navigation, horizontal stat cards
+  Mobile: scrollable carousel, stacked stat cards
+{%- endcomment -%}
+
+{%- liquid
+  assign section_id = section.id
+  assign heading = section.settings.heading
+  assign background_color = section.settings.background_color
+  assign text_color = section.settings.text_color
+  assign card_background = section.settings.card_background
+  assign media_card_background = section.settings.media_card_background
+  assign show_navigation = section.settings.show_navigation
+  assign show_statistics = section.settings.show_statistics
+  assign stat_blocks = section.blocks | where: 'type', 'stat'
+-%}
+
+{% comment %} Include CSS snippet {% endcomment %}
+{% render 'homepage-trust-section.css',
+  section_id: section_id,
+  background_color: background_color,
+  text_color: text_color,
+  card_background: card_background,
+  media_card_background: media_card_background
+%}
+
+<section class="homepage-trust-section-{{ section_id }}" data-section-id="{{ section_id }}">
+  <div class="homepage-trust-section__container-{{ section_id }}">
+
+    {% comment %} Section Title {% endcomment %}
+    <h2 class="homepage-trust-section__title-{{ section_id }}">
+      {{ heading }}
+    </h2>
+
+    {% comment %} Carousel {% endcomment %}
+    <div class="homepage-trust-section__carousel-{{ section_id }}">
+      <div class="homepage-trust-section__carousel-viewport-{{ section_id }}" data-carousel-viewport>
+        <div class="homepage-trust-section__carousel-track-{{ section_id }}" data-carousel-track>
+
+        {% comment %} Render all blocks in order {% endcomment %}
+        {% for block in section.blocks %}
+          {% case block.type %}
+
+            {% when 'image' %}
+              <div
+                class="homepage-trust-section__item-{{ section_id }} homepage-trust-section__item-{{ section_id }}--image {% if block.settings.has_overlay %}has-overlay{% endif %}"
+                {% if block.settings.background_color != blank or block.settings.text_color != blank %}style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}--trust-text-color: {{ block.settings.text_color }};{% endif %}"{% endif %}
+                {{ block.shopify_attributes }}
+              >
+                {% if block.settings.image != blank %}
+                  {{ block.settings.image | image_url: width: 560 | image_tag:
+                    loading: 'lazy',
+                    alt: block.settings.image.alt | default: 'Trust item'
+                  }}
+                {% else %}
+                  <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #e4f5ff 0%, #cce8f9 100%);"></div>
+                {% endif %}
+              </div>
+
+            {% when 'image_quote' %}
+              <div
+                class="homepage-trust-section__item-{{ section_id }} homepage-trust-section__item-{{ section_id }}--expert"
+                {% if block.settings.background_color != blank or block.settings.text_color != blank %}style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}--trust-text-color: {{ block.settings.text_color }};{% endif %}"{% endif %}
+                {{ block.shopify_attributes }}
+              >
+                {% if block.settings.image != blank %}
+                  <div class="homepage-trust-section__expert-image-{{ section_id }}">
+                    {{ block.settings.image | image_url: width: 160 | image_tag:
+                      loading: 'lazy',
+                      alt: block.settings.name | default: 'Expert photo'
+                    }}
+                  </div>
+                {% endif %}
+
+                {% if block.settings.quote != blank %}
+                  <p class="homepage-trust-section__expert-quote-{{ section_id }}">
+                    "{{ block.settings.quote }}"
+                  </p>
+                {% endif %}
+
+                <div class="homepage-trust-section__expert-info-{{ section_id }}">
+                  {% if block.settings.name != blank %}
+                    <p class="homepage-trust-section__expert-name-{{ section_id }}">
+                      {{ block.settings.name }}
+                    </p>
+                  {% endif %}
+                  {% if block.settings.credentials != blank %}
+                    <p class="homepage-trust-section__expert-credentials-{{ section_id }}">
+                      {{ block.settings.credentials }}
+                    </p>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% when 'video' %}
+              <div
+                class="homepage-trust-section__item-{{ section_id }} homepage-trust-section__item-{{ section_id }}--video"
+                data-video-trigger
+                data-video-url="{{ block.settings.video_url }}"
+                role="button"
+                tabindex="0"
+                aria-label="Play video"
+                {% if block.settings.background_color != blank or block.settings.text_color != blank %}style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}--trust-text-color: {{ block.settings.text_color }};{% endif %}"{% endif %}
+                {{ block.shopify_attributes }}
+              >
+                {% if block.settings.thumbnail != blank %}
+                  {{ block.settings.thumbnail | image_url: width: 560 | image_tag:
+                    loading: 'lazy',
+                    alt: 'Video thumbnail'
+                  }}
+                {% else %}
+                  <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                {% endif %}
+
+                <div class="homepage-trust-section__video-overlay-{{ section_id }}">
+                  <button
+                    type="button"
+                    class="homepage-trust-section__play-button-{{ section_id }}"
+                    aria-label="Play video"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M8 5v14l11-7L8 5z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+            {% when 'quote_only' %}
+              <div
+                class="homepage-trust-section__item-{{ section_id }} homepage-trust-section__item-{{ section_id }}--media variant-{{ block.settings.variant }}"
+                {% if block.settings.background_color != blank or block.settings.text_color != blank %}style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}--trust-text-color: {{ block.settings.text_color }};{% endif %}"{% endif %}
+                {{ block.shopify_attributes }}
+              >
+                {% if block.settings.quote != blank %}
+                  <p class="homepage-trust-section__media-quote-{{ section_id }}">
+                    "{{ block.settings.quote }}"
+                  </p>
+                {% endif %}
+
+                <div class="homepage-trust-section__media-footer-{{ section_id }}">
+                  <p class="homepage-trust-section__media-label-{{ section_id }}">As seen on</p>
+                  {% if block.settings.logo != blank %}
+                    <div class="homepage-trust-section__media-logo-{{ section_id }}">
+                      {{ block.settings.logo | image_url: width: 240 | image_tag:
+                        loading: 'lazy',
+                        alt: block.settings.logo.alt | default: 'Media logo'
+                      }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% when 'media_split' %}
+              <div
+                class="homepage-trust-section__item-{{ section_id }} homepage-trust-section__item-{{ section_id }}--media-split"
+                {{ block.shopify_attributes }}
+              >
+                {% if block.settings.image_position == 'top' and block.settings.image != blank %}
+                  <div class="homepage-trust-section__media-split-image-{{ section_id }}">
+                    {{ block.settings.image | image_url: width: 560 | image_tag:
+                      loading: 'lazy',
+                      alt: block.settings.image.alt | default: 'Featured image'
+                    }}
+                  </div>
+                {% endif %}
+                <div class="homepage-trust-section__media-split-quote-{{ section_id }}" {% if block.settings.background_color != blank or block.settings.text_color != blank %}style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}--trust-text-color: {{ block.settings.text_color }};{% endif %}"{% endif %}>
+                  {% if block.settings.quote != blank %}
+                    <div class="homepage-trust-section__media-split-text-{{ section_id }}">
+                      {{ block.settings.quote }}
+                    </div>
+                  {% endif %}
+                </div>
+                {% if block.settings.image_position == 'bottom' and block.settings.image != blank %}
+                  <div class="homepage-trust-section__media-split-image-{{ section_id }}">
+                    {{ block.settings.image | image_url: width: 560 | image_tag:
+                      loading: 'lazy',
+                      alt: block.settings.image.alt | default: 'Featured image'
+                    }}
+                  </div>
+                {% endif %}
+              </div>
+
+          {% endcase %}
+        {% endfor %}
+
+        </div>
+      </div>
+
+      {% comment %} Carousel Controls (Desktop only) {% endcomment %}
+      {% if show_navigation %}
+        <div class="homepage-trust-section__carousel-controls-{{ section_id }} homepage-trust-section__desktop-only-{{ section_id }}">
+          <button
+            type="button"
+            class="homepage-trust-section__carousel-btn-{{ section_id }}"
+            data-carousel-prev
+            aria-label="Previous items"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+          </button>
+
+          <div class="homepage-trust-section__carousel-dots-{{ section_id }}" data-carousel-dots>
+            {% comment %} Dots will be generated by JavaScript {% endcomment %}
+          </div>
+
+          <button
+            type="button"
+            class="homepage-trust-section__carousel-btn-{{ section_id }}"
+            data-carousel-next
+            aria-label="Next items"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+            </svg>
+          </button>
+        </div>
+      {% endif %}
+    </div>
+
+    {% comment %} Statistics Section {% endcomment %}
+    {% if show_statistics %}
+      <div class="homepage-trust-section__stats-{{ section_id }}">
+        {% for block in stat_blocks %}
+          <div class="homepage-trust-section__stat-card-{{ section_id }}" {% if block.settings.background_color != blank or block.settings.text_color != blank %}style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}--trust-text-color: {{ block.settings.text_color }};{% endif %}"{% endif %} {{ block.shopify_attributes }}>
+            <div class="homepage-trust-section__stat-content-{{ section_id }}">
+              <div class="homepage-trust-section__stat-row-{{ section_id }}">
+                {% if block.settings.percentage != blank %}
+                  <div class="homepage-trust-section__stat-badge-{{ section_id }}">
+                    <span>{{ block.settings.percentage }}</span>
+                  </div>
+                {% endif %}
+                {% if block.settings.description_line_1 != blank %}
+                  <span class="homepage-trust-section__stat-text-line1-{{ section_id }}">{{ block.settings.description_line_1 }}</span>
+                {% endif %}
+              </div>
+              {% if block.settings.description_line_2 != blank %}
+                <p class="homepage-trust-section__stat-text-line2-{{ section_id }}">{{ block.settings.description_line_2 }}</p>
+              {% endif %}
+            </div>
+
+            {% if block.settings.percentage != blank %}
+              <div class="homepage-trust-section__stat-value-{{ section_id }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-top: 4px">
+                      <rect y="24" width="24" height="24" rx="12" transform="rotate(-90 0 24)" fill="#2C3D50"/>
+                      <path d="M17.2122 10.3687L16.542 11.015L12.4535 6.92645V18.8457H11.5305V6.92645L7.442 11.015L6.78125 10.3687L11.9967 5.1532L17.2122 10.3687Z" fill="white"/>
+                  </svg>
+                <span>{{ block.settings.percentage }}</span>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% comment %} JavaScript for Carousel and Video Modal {% endcomment %}
+<script>
+(function() {
+  'use strict';
+
+  const sectionId = '{{ section_id }}';
+  const registry = window.HomepageSectionRegistry;
+  const isDesktop = () => window.innerWidth > 749;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MIN_CLONE_COUNT = 3;
+  const DESKTOP_INITIAL_OFFSET = 140;
+  const MOBILE_CENTER_INDEX = 2;
+
+  if (!registry) return;
+
+  let section = null;
+  let track = null;
+  let viewport = null;
+  let prevBtn = null;
+  let nextBtn = null;
+  let dotsContainer = null;
+  let originalTrackMarkup = '';
+  let currentMode = null;
+  let currentIndex = 0;
+  let isAnimating = false;
+  let totalOriginalItems = 0;
+  let dots = [];
+  let cloneCount = MIN_CLONE_COUNT;
+
+  function getCloneCountForViewport(items) {
+    const firstItem = items[0];
+
+    if (!firstItem || !viewport || !track) return MIN_CLONE_COUNT;
+
+    const trackStyles = window.getComputedStyle(track);
+    const gap = parseFloat(trackStyles.columnGap || trackStyles.gap || '16') || 16;
+    const cardSpan = firstItem.offsetWidth + gap;
+
+    if (!cardSpan) return MIN_CLONE_COUNT;
+
+    return Math.min(items.length, Math.max(MIN_CLONE_COUNT, Math.ceil(viewport.clientWidth / cardSpan) + 1));
+  }
+
+  // Clone items for infinite scroll
+  function setupInfiniteCarousel() {
+    const originalItems = Array.from(track.children);
+    totalOriginalItems = originalItems.length;
+    cloneCount = getCloneCountForViewport(originalItems);
+
+    if (totalOriginalItems <= 1) return false;
+
+    // Clone last cloneCount items and prepend
+    const prependClones = [];
+    for (let i = 0; i < cloneCount && i < totalOriginalItems; i++) {
+      const sourceIndex = totalOriginalItems - cloneCount + i;
+      if (sourceIndex >= 0) {
+        const clone = originalItems[sourceIndex].cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        clone.setAttribute('data-clone', 'prepend');
+        clone.removeAttribute('id');
+        prependClones.push(clone);
+      }
+    }
+
+    // Clone first cloneCount items and append
+    const appendClones = [];
+    for (let i = 0; i < cloneCount && i < totalOriginalItems; i++) {
+      const clone = originalItems[i].cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      clone.setAttribute('data-clone', 'append');
+      clone.removeAttribute('id');
+      appendClones.push(clone);
+    }
+
+    // Insert clones
+    const firstOriginal = track.firstChild;
+    prependClones.forEach(clone => track.insertBefore(clone, firstOriginal));
+    appendClones.forEach(clone => track.appendChild(clone));
+
+    return true;
+  }
+
+  // ===== MOBILE CAROUSEL (DOM Rotation) =====
+
+  let mobileIsAnimating = false;
+  let isDragging = false;
+
+  // Touch tracking
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let startTime = 0;
+  let dragOffset = 0;
+
+  // Layout measurements
+  let cardWidth = 0;
+  let cardGap = 16;
+  let baseOffset = 0;
+
+  function setTrackTranslate(offset) {
+    track.style.transform = `translateX(${offset * -1}px)`;
+  }
+
+  // DOM rotation functions for infinite carousel
+  function rotateForward() {
+    const first = track.firstElementChild;
+    if (first) {
+      track.appendChild(first);
+    }
+  }
+
+  function rotateBackward() {
+    const last = track.lastElementChild;
+    if (last) {
+      track.insertBefore(last, track.firstElementChild);
+    }
+  }
+
+  function centerCurrentCard() {
+    const cards = Array.from(track.children);
+    const centeredCard = cards[MOBILE_CENTER_INDEX] || cards[0];
+    if (!centeredCard) return;
+
+    baseOffset = centeredCard.offsetLeft - (viewport.clientWidth - cardWidth) / 2;
+    track.style.transition = 'none';
+    setTrackTranslate(baseOffset);
+  }
+
+  // Animate to next/prev card
+  function animateTo(direction) {
+    if (mobileIsAnimating) return;
+    const cards = track.children;
+    if (cards.length < 2) return;
+
+    mobileIsAnimating = true;
+
+    const moveDistance = (cardWidth + cardGap) * direction;
+    const targetOffset = baseOffset + moveDistance;
+
+    track.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    setTrackTranslate(targetOffset);
+
+    const onEnd = () => {
+      track.removeEventListener('transitionend', onEnd);
+
+      // Rotate DOM and reset position
+      if (direction > 0) {
+        rotateForward();
+      } else {
+        rotateBackward();
+      }
+      centerCurrentCard();
+      mobileIsAnimating = false;
+    };
+
+    track.addEventListener('transitionend', onEnd, { once: true });
+
+    // Fallback timeout in case transitionend doesn't fire
+    setTimeout(() => {
+      if (mobileIsAnimating) onEnd();
+    }, 400);
+  }
+
+  // Snap back to center (cancelled swipe)
+  function snapBack() {
+    track.style.transition = 'transform 0.25s ease-out';
+    setTrackTranslate(baseOffset);
+
+    setTimeout(() => {
+      track.style.transition = 'none';
+    }, 250);
+  }
+
+  // Touch handlers
+  function onMobileTouchStart(e) {
+    if (mobileIsAnimating) return;
+
+    isDragging = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    currentX = startX;
+    startTime = Date.now();
+    dragOffset = 0;
+
+    track.style.transition = 'none';
+  }
+
+  function onMobileTouchMove(e) {
+    if (!isDragging) return;
+
+    currentX = e.touches[0].clientX;
+    const diffX = startX - currentX;
+    const diffY = startY - e.touches[0].clientY;
+
+    // Only handle horizontal movement
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      e.preventDefault();
+      dragOffset = diffX;
+      setTrackTranslate(baseOffset + dragOffset);
+    }
+  }
+
+  function onMobileTouchEnd(e) {
+    if (!isDragging) return;
+    isDragging = false;
+
+    const endX = e.changedTouches[0].clientX;
+    const deltaX = startX - endX;
+    const deltaTime = Date.now() - startTime;
+    const velocity = deltaX / deltaTime; // px/ms
+
+    // Determine action based on distance OR velocity
+    const threshold = cardWidth * 0.25;
+    const velocityThreshold = 0.3; // px/ms
+    const willAnimate = Math.abs(deltaX) > threshold || Math.abs(velocity) > velocityThreshold;
+
+    if (willAnimate) {
+      // Swipe detected
+      const direction = deltaX > 0 ? 1 : -1;
+      animateTo(direction);
+    } else {
+      // Insufficient swipe, snap back
+      snapBack();
+    }
+  }
+
+  function resetDots() {
+    dots = [];
+
+    if (dotsContainer) {
+      dotsContainer.innerHTML = '';
+    }
+  }
+
+  function resetTrackToOriginal() {
+    if (!track) return;
+
+    track.innerHTML = originalTrackMarkup;
+    track.style.transition = '';
+    track.style.transform = '';
+  }
+
+  function resetCarouselState() {
+    currentIndex = 0;
+    isAnimating = false;
+    totalOriginalItems = 0;
+    cloneCount = MIN_CLONE_COUNT;
+    mobileIsAnimating = false;
+    isDragging = false;
+    startX = 0;
+    startY = 0;
+    currentX = 0;
+    startTime = 0;
+    dragOffset = 0;
+    cardWidth = 0;
+    cardGap = 16;
+    baseOffset = 0;
+  }
+
+  // Set position (with or without animation)
+  // initialOffset: optional pixel offset to shift the starting position (e.g., to show first card cut in half)
+  function setPosition(index, animate = true, initialOffset = 0) {
+    const items = track.children;
+    const targetItem = items[index];
+
+    if (!targetItem) return;
+
+    if (animate && !prefersReducedMotion) {
+      track.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+      isAnimating = true;
+    } else {
+      track.style.transition = 'none';
+    }
+
+    currentIndex = index;
+    const offset = targetItem.offsetLeft - initialOffset;  // Use actual DOM position, minus any initial offset
+    setTrackTranslate(offset);
+
+    // Force reflow for instant changes
+    if (!animate || prefersReducedMotion) {
+      track.offsetHeight;
+    }
+
+    updateDots();
+  }
+
+  // Get real item index (for dots)
+  function getRealIndex() {
+    // Convert currentIndex to the corresponding real item index (0-based)
+    let realIndex = currentIndex - cloneCount;
+    // Wrap around
+    realIndex = ((realIndex % totalOriginalItems) + totalOriginalItems) % totalOriginalItems;
+    return realIndex;
+  }
+
+  // Update dots to reflect current real position
+  function updateDots() {
+    const realIndex = getRealIndex();
+    dots.forEach((dot, index) => {
+      dot.classList.toggle('is-active', index === realIndex);
+    });
+  }
+
+  // Navigate to next/prev
+  function navigate(direction) {
+    if (isAnimating) return;
+    setPosition(currentIndex + direction, true);
+  }
+
+  // Go to specific real item
+  function goToRealItem(realIndex, animate = true) {
+    if (isAnimating && animate) return;
+    const targetIndex = cloneCount + realIndex;
+    setPosition(targetIndex, animate);
+  }
+
+  // Handle transition end - instant jump if on clone
+  function handleTransitionEnd() {
+    isAnimating = false;
+
+    // Check if we landed on a clone and need to jump
+    if (currentIndex < cloneCount) {
+      // On prepended clone -> jump to corresponding real item at end
+      const jumpTo = currentIndex + totalOriginalItems;
+      setPosition(jumpTo, false);
+    } else if (currentIndex >= cloneCount + totalOriginalItems) {
+      // On appended clone -> jump to corresponding real item at start
+      const jumpTo = currentIndex - totalOriginalItems;
+      setPosition(jumpTo, false);
+    }
+  }
+
+  function handlePrevClick() {
+    navigate(-1);
+  }
+
+  function handleNextClick() {
+    navigate(1);
+  }
+
+  function teardownDesktopCarousel() {
+    if (!track) return;
+
+    track.removeEventListener('transitionend', handleTransitionEnd);
+
+    if (prevBtn) {
+      prevBtn.removeEventListener('click', handlePrevClick);
+    }
+
+    if (nextBtn) {
+      nextBtn.removeEventListener('click', handleNextClick);
+    }
+
+    resetDots();
+  }
+
+  function teardownMobileCarousel() {
+    if (!viewport) return;
+
+    viewport.removeEventListener('touchstart', onMobileTouchStart);
+    viewport.removeEventListener('touchmove', onMobileTouchMove);
+    viewport.removeEventListener('touchend', onMobileTouchEnd);
+    viewport.style.touchAction = '';
+  }
+
+  function teardownCarousel() {
+    if (!track) return;
+
+    if (currentMode === 'desktop') {
+      teardownDesktopCarousel();
+    }
+
+    if (currentMode === 'mobile') {
+      teardownMobileCarousel();
+    }
+
+    resetTrackToOriginal();
+    resetCarouselState();
+    currentMode = null;
+  }
+
+  function initDesktopCarousel() {
+    const hasEnoughItems = setupInfiniteCarousel();
+
+    currentMode = 'desktop';
+
+    if (!hasEnoughItems) {
+      return;
+    }
+
+    track.addEventListener('transitionend', handleTransitionEnd);
+
+    if (dotsContainer) {
+      for (let i = 0; i < totalOriginalItems; i++) {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'homepage-trust-section__carousel-dot-{{ section_id }}';
+        if (i === 0) dot.classList.add('is-active');
+        dot.setAttribute('aria-label', `Go to item ${i + 1}`);
+        dot.addEventListener('click', () => goToRealItem(i, true));
+        dotsContainer.appendChild(dot);
+      }
+      dots = Array.from(dotsContainer.querySelectorAll('button'));
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', handlePrevClick);
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', handleNextClick);
+    }
+
+    requestAnimationFrame(() => {
+      setPosition(cloneCount, false, DESKTOP_INITIAL_OFFSET);
+    });
+  }
+
+  function initMobileCarousel() {
+    currentMode = 'mobile';
+    const cards = Array.from(track.children);
+    if (cards.length < 2) return;
+
+    // Measure card dimensions
+    cardWidth = cards[0].offsetWidth;
+    const trackStyles = window.getComputedStyle(track);
+    cardGap = parseFloat(trackStyles.gap || '16') || 16;
+
+    // Center the active card with two preloaded cards before it and after it.
+    centerCurrentCard();
+
+    viewport.addEventListener('touchstart', onMobileTouchStart, { passive: true });
+    viewport.addEventListener('touchmove', onMobileTouchMove, { passive: false });
+    viewport.addEventListener('touchend', onMobileTouchEnd, { passive: true });
+    viewport.style.touchAction = 'pan-y pinch-zoom';
+  }
+
+  function syncCarouselMode(forceRebuild) {
+    if (!track || !viewport) return;
+
+    const nextMode = isDesktop() ? 'desktop' : 'mobile';
+
+    if (!forceRebuild && currentMode === nextMode) {
+      return;
+    }
+
+    teardownCarousel();
+
+    if (nextMode === 'desktop') {
+      initDesktopCarousel();
+      return;
+    }
+
+    initMobileCarousel();
+  }
+
+  // Inline video playback. Mirrors temp-trust-collage.liquid: on click, the
+  // card replaces its thumbnail with an inline <video> or <iframe> sized to
+  // fill the same div. Any URL that isn't recognized as YouTube or Vimeo is
+  // treated as a direct video file, so .mp4 / .mov / .webm all work without
+  // requiring the extension to appear in the URL string.
+  function createVideoElement(url) {
+    if (!url) return null;
+
+    const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (youtubeMatch) {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=1&rel=0`;
+      iframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+      return iframe;
+    }
+
+    const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (vimeoMatch) {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+      iframe.allow = 'autoplay; fullscreen';
+      iframe.allowFullscreen = true;
+      return iframe;
+    }
+
+    // Direct video file (.mp4, .mov, .webm, Shopify file URLs, etc.)
+    const video = document.createElement('video');
+    video.src = url;
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    return video;
+  }
+
+  function playInlineVideo(trigger) {
+    if (!trigger || trigger.classList.contains('is-playing')) return;
+    const videoUrl = trigger.dataset.videoUrl;
+    if (!videoUrl) return;
+
+    const videoElement = createVideoElement(videoUrl);
+    if (!videoElement) return;
+
+    trigger.classList.add('is-playing');
+    trigger.appendChild(videoElement);
+  }
+
+  function handleTrackClick(e) {
+    const trigger = e.target.closest('[data-video-trigger]');
+    if (!trigger) return;
+    playInlineVideo(trigger);
+  }
+
+  function handleTrackKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const trigger = e.target.closest('[data-video-trigger]');
+    if (!trigger) return;
+    e.preventDefault();
+    playInlineVideo(trigger);
+  }
+
+  function setupVideoListeners() {
+    if (!track) return;
+    track.addEventListener('click', handleTrackClick);
+    track.addEventListener('keydown', handleTrackKeydown);
+  }
+
+  function teardownVideoListeners() {
+    if (!track) return;
+    track.removeEventListener('click', handleTrackClick);
+    track.removeEventListener('keydown', handleTrackKeydown);
+  }
+
+  function resolveElements() {
+    section = document.querySelector(`[data-section-id="${sectionId}"]`);
+    if (!section) return false;
+
+    track = section.querySelector('[data-carousel-track]');
+    viewport = section.querySelector('[data-carousel-viewport]');
+    prevBtn = section.querySelector('[data-carousel-prev]');
+    nextBtn = section.querySelector('[data-carousel-next]');
+    dotsContainer = section.querySelector('[data-carousel-dots]');
+
+    if (track) {
+      originalTrackMarkup = track.innerHTML;
+    }
+
+    return true;
+  }
+
+  function initSection() {
+    if (!resolveElements()) return;
+
+    setupVideoListeners();
+
+    if (track && viewport) {
+      syncCarouselMode(true);
+    }
+  }
+
+  function rerenderSection() {
+    teardownVideoListeners();
+    teardownCarousel();
+
+    if (!resolveElements()) return;
+
+    setupVideoListeners();
+
+    if (track && viewport) {
+      syncCarouselMode(true);
+    }
+  }
+
+  function destroySection() {
+    teardownVideoListeners();
+    teardownCarousel();
+    section = null;
+    track = null;
+    viewport = null;
+    prevBtn = null;
+    nextBtn = null;
+    dotsContainer = null;
+  }
+
+  registry.register(sectionId, {
+    init: initSection,
+    rerender: rerenderSection,
+    destroy: destroySection
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Homepage Trust Section",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (use <strong> for bold)",
+      "default": "Trusted by <strong>experts</strong> and <strong>families</strong> like yours"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#2c3d50"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card Background (Light)",
+      "default": "#e4f5ff"
+    },
+    {
+      "type": "color",
+      "id": "media_card_background",
+      "label": "Media Card Background (Dark)",
+      "default": "#5368c2"
+    },
+    {
+      "type": "header",
+      "content": "Display Options"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "Show navigation controls (desktop)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_statistics",
+      "label": "Show statistics section",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "checkbox",
+          "id": "has_overlay",
+          "label": "Add Dark Overlay",
+          "default": false,
+          "info": "Useful for video-like darkened images"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Block Background Color",
+          "info": "Overrides the section/card background for this block. Leave empty to use the section default."
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Block Text Color",
+          "info": "Overrides the section text color for this block. Leave empty to use the section default."
+        }
+      ]
+    },
+    {
+      "type": "image_quote",
+      "name": "Image + Quote",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Expert Photo"
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Quote",
+          "default": "This is an excellent product for families."
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Name",
+          "default": "Dr. Jane Smith"
+        },
+        {
+          "type": "text",
+          "id": "credentials",
+          "label": "Credentials",
+          "default": "MD, Pediatric Nutrition Specialist"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Block Background Color",
+          "info": "Overrides the section/card background for this block. Leave empty to use the section default."
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Block Text Color",
+          "info": "Overrides the section text color for this block. Leave empty to use the section default."
+        }
+      ]
+    },
+    {
+      "type": "video",
+      "name": "Video Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "thumbnail",
+          "label": "Video Thumbnail"
+        },
+        {
+          "type": "text",
+          "id": "video_url",
+          "label": "Video URL",
+          "info": "Supports YouTube, Vimeo, or direct video file URLs (.mp4, .mov, .webm). For Shopify-hosted files, paste the file's CDN URL.",
+          "placeholder": "https://www.youtube.com/watch?v=..."
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Block Background Color",
+          "info": "Overrides the section/card background for this block. Leave empty to use the section default."
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Block Text Color",
+          "info": "Overrides the section text color for this block. Leave empty to use the section default."
+        }
+      ]
+    },
+    {
+      "type": "quote_only",
+      "name": "Quote Card",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Quote",
+          "default": "A breakthrough in children's nutrition."
+        },
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Media Logo",
+          "info": "e.g., ABC News, Forbes, etc."
+        },
+        {
+          "type": "select",
+          "id": "variant",
+          "label": "Card Style",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light Background"
+            },
+            {
+              "value": "dark",
+              "label": "Dark Background"
+            }
+          ],
+          "default": "light"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Block Background Color",
+          "info": "Overrides the section/card background (and the light/dark style) for this block. Leave empty to use the section default."
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Block Text Color",
+          "info": "Overrides the section text color for this block. Note: the dark variant uses white text that this won't change. Leave empty to use the section default."
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "name": "Statistic Card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "percentage",
+          "label": "Percentage",
+          "default": "95%"
+        },
+        {
+          "type": "text",
+          "id": "description_line_1",
+          "label": "Description Line 1",
+          "default": "of parents see"
+        },
+        {
+          "type": "text",
+          "id": "description_line_2",
+          "label": "Description Line 2",
+          "default": "improved health & wellness"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Block Background Color",
+          "info": "Overrides the section/card background for this block. Leave empty to use the section default."
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Block Text Color",
+          "info": "Overrides the section text color for this block. Leave empty to use the section default."
+        }
+      ]
+    },
+    {
+      "type": "media_split",
+      "name": "Media Split Card",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "quote",
+          "label": "Quote Text",
+          "default": "<p>Best Multivitamins For Kids In 2026, According To Experts</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Featured Image"
+        },
+        {
+          "type": "select",
+          "id": "image_position",
+          "label": "Image Position",
+          "options": [
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            },
+            {
+              "value": "top",
+              "label": "Top"
+            }
+          ],
+          "default": "bottom"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Block Background Color",
+          "info": "Overrides the card background for this block. Leave empty to use the section default."
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Block Text Color",
+          "info": "Overrides the section text color for this block. Leave empty to use the section default."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Homepage Trust Section",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image_quote",
+          "settings": {
+            "quote": "These vitamins are exactly what I recommend to parents looking for quality nutrition.",
+            "name": "Dr. Sarah Johnson",
+            "credentials": "Pediatric Nutritionist"
+          }
+        },
+        {
+          "type": "video"
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "quote_only",
+          "settings": {
+            "quote": "A revolutionary approach to children's health.",
+            "variant": "dark"
+          }
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "stat",
+          "settings": {
+            "percentage": "95%",
+            "description_line_1": "of parents see",
+            "description_line_2": "improved health & wellness"
+          }
+        },
+        {
+          "type": "stat",
+          "settings": {
+            "percentage": "82%",
+            "description_line_1": "of kids ask for",
+            "description_line_2": "their vitamins daily"
+          }
+        },
+        {
+          "type": "stat",
+          "settings": {
+            "percentage": "97%",
+            "description_line_1": "customer",
+            "description_line_2": "satisfaction rate"
+          }
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.overlay"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,1110 @@
+{% comment %}
+  Two-column listicle block with authorable image, inspired by temp-hero conventions.
+{% endcomment %}
+
+<style>
+  #{{ section.id }} {
+    --rf-bg: {{ section.settings.background_color }};
+    --rf-text: {{ section.settings.text_color }};
+    --rf-subtext: {{ section.settings.subtext_color }};
+    --rf-badge-bg: {{ section.settings.badge_bg }};
+    --rf-badge-text: {{ section.settings.badge_text_color }};
+    --rf-button-bg: {{ section.settings.button_bg }};
+    --rf-button-text: {{ section.settings.button_text_color }};
+    --rf-button-border: {{ section.settings.button_border }};
+    --rf-button-radius: {{ section.settings.button_radius }}px;
+    --rf-badge-radius: {{ section.settings.badge_radius }}px;
+    --rf-badge-font: {{ section.settings.badge_font_family }};
+    --rf-badge-weight: {{ section.settings.badge_font_weight }};
+    --rf-badge-size: {{ section.settings.badge_font_size }};
+    --rf-badge-size-mobile: {{ section.settings.badge_font_size_mobile }};
+    --rf-heading-font: {{ section.settings.heading_font_family }};
+    --rf-heading-weight: {{ section.settings.heading_font_weight }};
+    --rf-body-font: {{ section.settings.body_font_family }};
+    --rf-body-weight: {{ section.settings.body_font_weight }};
+    --rf-highlight-font: {{ section.settings.highlight_font_family }};
+    --rf-highlight-weight: {{ section.settings.highlight_font_weight }};
+    --rf-highlight-size: {{ section.settings.highlight_size }};
+    --rf-highlight-size-mobile: {{ section.settings.highlight_size_mobile }};
+    --rf-button-font: {{ section.settings.button_font_family }};
+    --rf-button-weight: {{ section.settings.button_font_weight }};
+    --rf-button-size: {{ section.settings.button_font_size }};
+    --rf-button-size-mobile: {{ section.settings.button_font_size_mobile }};
+    --rf-padding-y-desktop: {{ section.settings.padding_desktop }}px;
+    --rf-padding-x-desktop: {{ section.settings.desktop_side_padding }}px;
+    --rf-padding-y-mobile: {{ section.settings.padding_mobile }}px;
+    --rf-padding-x-mobile: {{ section.settings.mobile_side_padding }}px;
+    --rf-gap: {{ section.settings.stack_gap }}px;
+    --rf-gap-mobile: {{ section.settings.stack_gap_mobile }}px;
+    --rf-heading-size: {{ section.settings.heading_size }};
+    --rf-body-size: {{ section.settings.body_size }};
+    --rf-mobile-heading-size: {{ section.settings.mobile_heading_size }};
+    --rf-mobile-body-size: {{ section.settings.mobile_body_size }};
+    --rf-max-width: {{ section.settings.content_max_width }}px;
+    --rf-image-bg: {{ section.settings.image_card_bg }};
+    --rf-image-padding: {{ section.settings.image_card_padding }}px;
+    --rf-margin-y-desktop: {{ section.settings.margin_y_desktop }}px;
+    --rf-margin-x-desktop: {{ section.settings.margin_x_desktop }}px;
+    --rf-margin-y-mobile: {{ section.settings.margin_y_mobile }}px;
+    --rf-margin-x-mobile: {{ section.settings.margin_x_mobile }}px;
+    --rf-text-align: {{ section.settings.text_align }};
+    --rf-align-items: {% if section.settings.text_align == 'center' %}center{% elsif section.settings.text_align == 'right' %}flex-end{% else %}flex-start{% endif %};
+    --rf-actions-justify: {% if section.settings.text_align == 'center' %}center{% elsif section.settings.text_align == 'right' %}flex-end{% else %}flex-start{% endif %};
+    --rf-rule-color: {{ section.settings.rule_color }};
+    --rf-rule-width: {{ section.settings.rule_width }};
+    --rf-rule-thickness: {{ section.settings.rule_thickness }}px;
+    --rf-border-top: {% if section.settings.border_top != blank %}{{ section.settings.border_top }}{% else %}none{% endif %};
+    --rf-border-bottom: {% if section.settings.border_bottom != blank %}{{ section.settings.border_bottom }}{% else %}none{% endif %};
+    background: var(--rf-bg);
+    color: var(--rf-text);
+    display: block;
+    box-sizing: border-box;
+    margin: var(--rf-margin-y-desktop) var(--rf-margin-x-desktop);
+    border-top: var(--rf-border-top);
+    border-bottom: var(--rf-border-bottom);
+  }
+
+  #{{ section.id }} .temp-listicle__inner {
+    max-width: var(--rf-max-width);
+    margin: 0 auto;
+    display: flex;
+    gap: clamp(24px, 4vw, 64px);
+    align-items: flex-start;
+    padding: var(--rf-padding-y-desktop) var(--rf-padding-x-desktop);
+    box-sizing: border-box;
+  }
+
+  #{{ section.id }} .temp-listicle__content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: var(--rf-gap);
+    align-self: middle;
+  }
+
+  #{{ section.id }} .temp-listicle__header,
+  #{{ section.id }} .temp-listicle__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rf-gap);
+    color: var(--rf-text);
+    text-align: var(--rf-text-align);
+    align-items: var(--rf-align-items);
+  }
+
+  #{{ section.id }} .temp-listicle__rule {
+    width: var(--rf-rule-width);
+    height: var(--rf-rule-thickness);
+    background: var(--rf-rule-color);
+  }
+
+  #{{ section.id }} .temp-listicle__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--rf-badge-bg);
+    color: var(--rf-badge-text);
+    border-radius: var(--rf-badge-radius);
+    padding: 6px 16px;
+    font-size: var(--rf-badge-size);
+    font-weight: var(--rf-badge-weight);
+    font-family: var(--rf-badge-font);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    width: fit-content;
+    margin-bottom: 0px;
+  }
+
+  #{{ section.id }} .temp-listicle__heading {
+    margin: 0;
+    font-size: var(--rf-heading-size);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    font-weight: var(--rf-heading-weight);
+    font-family: var(--rf-heading-font);
+    margin-bottom: 0px;
+  }
+
+  #{{ section.id }} .temp-listicle__body {
+    margin: 0;
+    font-size: var(--rf-body-size);
+    line-height: 1.6;
+    color: #333333;
+    font-weight: var(--rf-body-weight);
+    font-family: var(--rf-body-font);
+  }
+
+  #{{ section.id }} .temp-listicle__highlight {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    color: var(--rf-text);
+    font-weight: var(--rf-highlight-weight);
+    font-size: var(--rf-highlight-size);
+    font-family: var(--rf-highlight-font);
+  }
+
+  #{{ section.id }} .temp-listicle__highlight span:last-child {
+    flex: 1;
+  }
+
+  #{{ section.id }} .temp-listicle__highlight-text {
+    flex: 1;
+  }
+
+  #{{ section.id }} .temp-listicle__icon {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 28px;
+    margin-top: 2px;
+  }
+
+  #{{ section.id }} .temp-listicle__icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  #{{ section.id }} .temp-listicle__check {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: {{ section.settings.check_bg }};
+    color: {{ section.settings.check_color }};
+    font-size: 16px;
+    flex: 0 0 28px;
+    margin-top: 2px;
+  }
+
+  #{{ section.id }} .temp-listicle__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: var(--rf-actions-justify);
+  }
+
+  #{{ section.id }} .temp-listicle__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--rf-button-bg);
+    color: var(--rf-button-text);
+    border: 1px solid var(--rf-button-border);
+    border-radius: var(--rf-button-radius);
+    padding: 16px 32px;
+    text-decoration: none;
+    font-weight: var(--rf-button-weight);
+    font-size: var(--rf-button-size);
+    font-family: var(--rf-button-font);
+    line-height: 1.1;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: none;
+  }
+
+  #{{ section.id }} .temp-listicle__button:hover {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+
+  #{{ section.id }} .temp-listicle__media {
+    flex: 1;
+    min-width: 0;
+    background: var(--rf-image-bg);
+    padding: var(--rf-image-padding);
+    box-shadow: {% if section.settings.image_card_shadow %}0 16px 30px rgba(0, 0, 0, 0.08){% else %}none{% endif %};
+    box-sizing: border-box;
+    align-self: {% if section.settings.image_vertical_align == 'middle' %}center{% else %}flex-start{% endif %};
+  }
+
+  #{{ section.id }} .temp-listicle__media img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  @media (max-width: 900px) {
+    #{{ section.id }} {
+      margin: var(--rf-margin-y-mobile) var(--rf-margin-x-mobile);
+      --rf-text-align: {{ section.settings.mobile_text_align }};
+      --rf-align-items: {% if section.settings.mobile_text_align == 'center' %}center{% elsif section.settings.mobile_text_align == 'right' %}flex-end{% else %}flex-start{% endif %};
+      --rf-actions-justify: {% if section.settings.mobile_text_align == 'center' %}center{% elsif section.settings.mobile_text_align == 'right' %}flex-end{% else %}flex-start{% endif %};
+    }
+
+    #{{ section.id }} .temp-listicle__inner {
+      flex-direction: column;
+      gap: var(--rf-gap-mobile);
+      padding: var(--rf-padding-y-mobile) var(--rf-padding-x-mobile);
+    }
+
+    #{{ section.id }} .temp-listicle__content {
+      justify-content: flex-start;
+    }
+
+    {% if section.settings.mobile_media_position == 'before_heading' %}
+    #{{ section.id }} .temp-listicle__media {
+      order: -1;
+    }
+    {% endif %}
+
+    #{{ section.id }} .temp-listicle__heading {
+      font-size: var(--rf-mobile-heading-size);
+    }
+
+    #{{ section.id }} .temp-listicle__body,
+    #{{ section.id }} .temp-listicle__highlight {
+      font-size: var(--rf-mobile-body-size);
+    }
+
+    #{{ section.id }} .temp-listicle__badge {
+      font-size: var(--rf-badge-size-mobile);
+    }
+
+    #{{ section.id }} .temp-listicle__highlight {
+      font-size: var(--rf-highlight-size-mobile);
+    }
+
+    #{{ section.id }} .temp-listicle__button {
+      font-size: var(--rf-button-size-mobile);
+    }
+
+    #{{ section.id }} .temp-listicle__media {
+      margin-left: calc(-1 * var(--rf-padding-x-mobile));
+      margin-right: calc(-1 * var(--rf-padding-x-mobile));
+      width: calc(100% + (var(--rf-padding-x-mobile) * 2));
+    }
+  }
+
+  /* Alt layout styles */
+  #{{ section.id }} .temp-listicle__badge-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 16px;
+  }
+
+  #{{ section.id }} .temp-listicle__badge--alt {
+    background: transparent;
+    color: {{ section.settings.alt_badge_text_color }};
+    padding: 0;
+    margin: 0;
+  }
+
+  #{{ section.id }} .temp-listicle__alt-number {
+    font-family: var(--rf-badge-font);
+    font-size: var(--rf-badge-size);
+    font-weight: var(--rf-badge-weight);
+    color: {{ section.settings.alt_badge_text_color }};
+    letter-spacing: 0.02em;
+  }
+
+  #{{ section.id }} .temp-listicle__rule--alt {
+    width: 100%;
+    margin: 0;
+  }
+
+  {% if section.settings.alt_layout %}
+    #{{ section.id }} .temp-listicle__media {
+      position: relative;
+    }
+
+    #{{ section.id }} .temp-listicle__media::after {
+      content: '';
+      position: absolute;
+      top: {{ section.settings.alt_shadow_offset }}px;
+      left: {{ section.settings.alt_shadow_offset }}px;
+      width: 100%;
+      height: 100%;
+      background: {{ section.settings.alt_shadow_color }};
+      z-index: -1;
+      border-radius: inherit;
+    }
+  {% endif %}
+
+  @media (max-width: 900px) {
+    #{{ section.id }} .temp-listicle__badge--alt {
+      font-size: var(--rf-badge-size-mobile);
+    }
+    #{{ section.id }} .temp-listicle__alt-number {
+      font-size: var(--rf-badge-size-mobile);
+    }
+  }
+</style>
+
+{% if section.settings.heading != blank %}
+<section id="{{ section.id }}" class="temp-listicle-img-txt-block">
+  <div class="temp-listicle__inner{% if section.settings.right_image == blank %} temp-listicle__inner--no-image{% endif %}">
+    <div class="temp-listicle__content">
+      <div class="temp-listicle__header">
+        {% if section.settings.alt_layout %}
+          {% comment %} Alt layout: badge + number row with rule {% endcomment %}
+          <div class="temp-listicle__badge-row">
+            {% if section.settings.badge_text != blank %}
+              <span class="temp-listicle__badge temp-listicle__badge--alt">{{ section.settings.badge_text }}</span>
+            {% endif %}
+            {% if section.settings.alt_number != blank %}
+              <span class="temp-listicle__alt-number">{{ section.settings.alt_number }}</span>
+            {% endif %}
+          </div>
+          <div class="temp-listicle__rule temp-listicle__rule--alt" aria-hidden="true"></div>
+        {% else %}
+          {% if section.settings.show_top_rule %}
+            <div class="temp-listicle__rule" aria-hidden="true"></div>
+          {% endif %}
+          {% if section.settings.badge_text != blank %}
+            <div class="temp-listicle__badge">{{ section.settings.badge_text }}</div>
+          {% endif %}
+        {% endif %}
+
+        {% if section.settings.heading != blank %}
+          <h2 class="temp-listicle__heading">{{ section.settings.heading }}</h2>
+        {% endif %}
+      </div>
+
+      <div class="temp-listicle__copy">
+        {% if section.settings.body_text != blank %}
+          <div class="temp-listicle__body rte">
+            {{ section.settings.body_text }}
+          </div>
+        {% endif %}
+
+        {%- assign highlight_text_1 = section.settings.highlight_text | strip_html | strip -%}
+        {%- assign highlight_text_2 = section.settings.highlight_text_2 | strip_html | strip -%}
+        {%- assign highlight_text_3 = section.settings.highlight_text_3 | strip_html | strip -%}
+        {%- assign highlight_text_4 = section.settings.highlight_text_4 | strip_html | strip -%}
+
+        {% if highlight_text_1 != blank %}
+          <div class="temp-listicle__highlight">
+            {% if section.settings.highlight_icon_svg_1 != blank %}
+              <span class="temp-listicle__icon" aria-hidden="true">{{ section.settings.highlight_icon_svg_1 }}</span>
+            {% else %}
+              <span class="temp-listicle__check" aria-hidden="true">&#10003;</span>
+            {% endif %}
+            <div class="temp-listicle__highlight-text rte">{{ section.settings.highlight_text }}</div>
+          </div>
+        {% endif %}
+
+        {% if highlight_text_2 != blank %}
+          <div class="temp-listicle__highlight">
+            {% if section.settings.highlight_icon_svg_2 != blank %}
+              <span class="temp-listicle__icon" aria-hidden="true">{{ section.settings.highlight_icon_svg_2 }}</span>
+            {% else %}
+              <span class="temp-listicle__check" aria-hidden="true">&#10003;</span>
+            {% endif %}
+            <div class="temp-listicle__highlight-text rte">{{ section.settings.highlight_text_2 }}</div>
+          </div>
+        {% endif %}
+
+        {% if highlight_text_3 != blank %}
+          <div class="temp-listicle__highlight">
+            {% if section.settings.highlight_icon_svg_3 != blank %}
+              <span class="temp-listicle__icon" aria-hidden="true">{{ section.settings.highlight_icon_svg_3 }}</span>
+            {% else %}
+              <span class="temp-listicle__check" aria-hidden="true">&#10003;</span>
+            {% endif %}
+            <div class="temp-listicle__highlight-text rte">{{ section.settings.highlight_text_3 }}</div>
+          </div>
+        {% endif %}
+
+        {% if highlight_text_4 != blank %}
+          <div class="temp-listicle__highlight">
+            {% if section.settings.highlight_icon_svg_4 != blank %}
+              <span class="temp-listicle__icon" aria-hidden="true">{{ section.settings.highlight_icon_svg_4 }}</span>
+            {% else %}
+              <span class="temp-listicle__check" aria-hidden="true">&#10003;</span>
+            {% endif %}
+            <div class="temp-listicle__highlight-text rte">{{ section.settings.highlight_text_4 }}</div>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if section.settings.button_text != blank %}
+        <div class="temp-listicle__actions">
+          <a class="temp-listicle__button" href="{{ section.settings.button_link }}">
+            {{ section.settings.button_text }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if section.settings.right_image != blank %}
+      <div class="temp-listicle__media">
+        {{ section.settings.right_image | image_url: width: 1600 | image_tag: loading: 'lazy' }}
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Listicle Section", 
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Variant"
+    },
+    {
+      "type": "checkbox",
+      "id": "alt_layout",
+      "label": "Use alternate layout",
+      "default": false,
+      "info": "Badge + number row with rule, image shadow offset"
+    },
+    {
+      "type": "text",
+      "id": "alt_number",
+      "label": "Alt layout number",
+      "default": "01",
+      "info": "Number displayed opposite the badge (alt layout only)"
+    },
+    {
+      "type": "color",
+      "id": "alt_badge_text_color",
+      "label": "Alt badge text color",
+      "default": "#152e3c",
+      "info": "Badge + number text color (alt layout only)"
+    },
+    {
+      "type": "color",
+      "id": "alt_shadow_color",
+      "label": "Alt image shadow color",
+      "default": "#d9d9d9"
+    },
+    {
+      "type": "range",
+      "id": "alt_shadow_offset",
+      "label": "Alt image shadow offset (px)",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "paragraph",
+      "content": "Primary content fields that appear in the left column."
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "Badge #1"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Constant Exhaustion & Fatigue"
+    },
+    {
+      "type": "richtext",
+      "id": "body_text",
+      "label": "Body text",
+      "default": "<p>If you are constantly feeling drained-no matter how much you sleep-it could be a sign of nutrient gaps. Vitamins like B6, B12, and Magnesium help support energy and fight fatigue.</p><p>Without enough, your body can struggle to stay energized, focused, and emotionally balanced.</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "highlight_text",
+      "label": "Highlight text 1"
+    },
+    {
+      "type": "richtext",
+      "id": "highlight_text_2",
+      "label": "Highlight text 2"
+    },
+    {
+      "type": "richtext",
+      "id": "highlight_text_3",
+      "label": "Highlight text 3"
+    },
+    {
+      "type": "richtext",
+      "id": "highlight_text_4",
+      "label": "Highlight text 4"
+    },
+    {
+      "type": "paragraph",
+      "content": "Optional SVG overrides for each highlight icon."
+    },
+    {
+      "type": "textarea",
+      "id": "highlight_icon_svg_1",
+      "label": "Highlight icon SVG 1"
+    },
+    {
+      "type": "textarea",
+      "id": "highlight_icon_svg_2",
+      "label": "Highlight icon SVG 2"
+    },
+    {
+      "type": "textarea",
+      "id": "highlight_icon_svg_3",
+      "label": "Highlight icon SVG 3"
+    },
+    {
+      "type": "textarea",
+      "id": "highlight_icon_svg_4",
+      "label": "Highlight icon SVG 4"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Support Energy With Nutrition"
+    },
+    {
+      "type": "text",
+      "id": "button_link",
+      "label": "Button link",
+      "default": "/"
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image",
+      "label": "Right image"
+    },
+    {
+      "type": "header",
+      "content": "Typography - Badge"
+    },
+    {
+      "type": "paragraph",
+      "content": "Controls for the small badge label."
+    },
+    {
+      "type": "text",
+      "id": "badge_font_family",
+      "label": "Badge font family",
+      "default": "inherit"
+    },
+    {
+      "type": "text",
+      "id": "badge_font_weight",
+      "label": "Badge font weight (e.g. 700)",
+      "default": "700"
+    },
+    {
+      "type": "text",
+      "id": "badge_font_size",
+      "label": "Badge font size (e.g. 14px)",
+      "default": "14px"
+    },
+    {
+      "type": "text",
+      "id": "badge_font_size_mobile",
+      "label": "Badge font size mobile (e.g. 12px)",
+      "default": "12px"
+    },
+    {
+      "type": "color",
+      "id": "badge_bg",
+      "label": "Badge background",
+      "default": "#486CED"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "badge_radius",
+      "label": "Badge radius (px)",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Typography - Heading"
+    },
+    {
+      "type": "paragraph",
+      "content": "Controls for the main headline text."
+    },
+    {
+      "type": "text",
+      "id": "heading_font_family",
+      "label": "Heading font family",
+      "default": "inherit"
+    },
+    {
+      "type": "text",
+      "id": "heading_font_weight",
+      "label": "Heading font weight (e.g. 700)",
+      "default": "700"
+    },
+    {
+      "type": "text",
+      "id": "heading_size",
+      "label": "Heading font size (e.g. 48px)",
+      "default": "48px"
+    },
+    {
+      "type": "text",
+      "id": "mobile_heading_size",
+      "label": "Mobile heading font size (e.g. 32px)",
+      "default": "34px"
+    },
+    {
+      "type": "header",
+      "content": "Typography - Body"
+    },
+    {
+      "type": "paragraph",
+      "content": "Controls for the main body copy."
+    },
+    {
+      "type": "text",
+      "id": "body_font_family",
+      "label": "Body font family",
+      "default": "inherit"
+    },
+    {
+      "type": "text",
+      "id": "body_font_weight",
+      "label": "Body font weight (e.g. 400)",
+      "default": "400"
+    },
+    {
+      "type": "text",
+      "id": "body_size",
+      "label": "Body font size (e.g. 18px)",
+      "default": "18px"
+    },
+    {
+      "type": "text",
+      "id": "mobile_body_size",
+      "label": "Mobile body font size (e.g. 16px)",
+      "default": "16px"
+    },
+    {
+      "type": "header",
+      "content": "Typography - Highlight"
+    },
+    {
+      "type": "paragraph",
+      "content": "Controls for the highlight rows (1-3)."
+    },
+    {
+      "type": "text",
+      "id": "highlight_font_family",
+      "label": "Highlight font family",
+      "default": "inherit"
+    },
+    {
+      "type": "text",
+      "id": "highlight_font_weight",
+      "label": "Highlight font weight (e.g. 600)",
+      "default": "600"
+    },
+    {
+      "type": "text",
+      "id": "highlight_size",
+      "label": "Highlight font size (e.g. 18px)",
+      "default": "18px"
+    },
+    {
+      "type": "text",
+      "id": "highlight_size_mobile",
+      "label": "Highlight font size mobile (e.g. 16px)",
+      "default": "16px"
+    },
+    {
+      "type": "color",
+      "id": "check_bg",
+      "label": "Check background",
+      "default": "#5bd79b"
+    },
+    {
+      "type": "color",
+      "id": "check_color",
+      "label": "Check color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography - Button"
+    },
+    {
+      "type": "paragraph",
+      "content": "Controls for the call-to-action button text."
+    },
+    {
+      "type": "text",
+      "id": "button_font_family",
+      "label": "Button font family",
+      "default": "inherit"
+    },
+    {
+      "type": "text",
+      "id": "button_font_weight",
+      "label": "Button font weight (e.g. 700)",
+      "default": "700"
+    },
+    {
+      "type": "text",
+      "id": "button_font_size",
+      "label": "Button font size (e.g. 16px)",
+      "default": "16px"
+    },
+    {
+      "type": "text",
+      "id": "button_font_size_mobile",
+      "label": "Button font size mobile (e.g. 14px)",
+      "default": "14px"
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Button radius (px)",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "paragraph",
+      "content": "Theme colors used across the section."
+    },
+    {
+      "type": "color",
+      "id": "button_bg",
+      "label": "Button background",
+      "default": "#486CED"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_border",
+      "label": "Button border color",
+      "default": "#486CED"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Heading color",
+      "default": "#152e3c"
+    },
+    {
+      "type": "color",
+      "id": "subtext_color",
+      "label": "Body color",
+      "default": "#4b5668"
+    },
+    {
+      "type": "header",
+      "content": "Image Card"
+    },
+    {
+      "type": "paragraph",
+      "content": "Optional rule styling and image card background/padding."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_top_rule",
+      "label": "Show top rule",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "rule_color",
+      "label": "Top rule color",
+      "default": "#d9d9d9"
+    },
+    {
+      "type": "text",
+      "id": "rule_width",
+      "label": "Top rule width (e.g. 120px or 100%)",
+      "default": "120px"
+    },
+    {
+      "type": "range",
+      "id": "rule_thickness",
+      "label": "Top rule thickness (px)",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "color",
+      "id": "image_card_bg",
+      "label": "Image card background",
+      "default": "rgba(0,0,0,0)"
+    },
+    {
+      "type": "range",
+      "id": "image_card_padding",
+      "label": "Image card padding (px)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "image_card_shadow",
+      "label": "Image card shadow",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Layout & Spacing"
+    },
+    {
+      "type": "paragraph",
+      "content": "Alignment, width, and spacing controls."
+    },
+    {
+      "type": "paragraph",
+      "content": "Optional borders. Example value: 1px solid #486ced. Leave blank for no border."
+    },
+    {
+      "type": "text",
+      "id": "border_top",
+      "label": "Border top"
+    },
+    {
+      "type": "text",
+      "id": "border_bottom",
+      "label": "Border bottom"
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Text alignment",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_text_align",
+      "label": "Mobile text alignment",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_vertical_align",
+      "label": "Desktop image vertical alignment",
+      "default": "top",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "middle", "label": "Middle" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_media_position",
+      "label": "Mobile image position",
+      "default": "after_copy",
+      "options": [
+        { "value": "before_heading", "label": "Before content" },
+        { "value": "after_copy", "label": "After content" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_max_width",
+      "label": "Content max width (px)",
+      "min": 320,
+      "max": 1400,
+      "step": 20,
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "margin_y_desktop",
+      "label": "Margin vertical desktop (px)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "margin_x_desktop",
+      "label": "Margin horizontal desktop (px)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "margin_y_mobile",
+      "label": "Margin vertical mobile (px)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_x_mobile",
+      "label": "Margin horizontal mobile (px)",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_desktop",
+      "label": "Vertical padding desktop (px)",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "default": 84
+    },
+    {
+      "type": "range",
+      "id": "desktop_side_padding",
+      "label": "Horizontal padding desktop (px)",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_mobile",
+      "label": "Vertical padding mobile (px)",
+      "min": 0,
+      "max": 140,
+      "step": 4,
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "mobile_side_padding",
+      "label": "Mobile side padding (px)",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "stack_gap",
+      "label": "Spacing between elements (px)",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "stack_gap_mobile",
+      "label": "Spacing between elements mobile (px)",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Listicle Img Txt Section",
+      "category": "Temporary",
+      "settings": {
+        "badge_text": "Red Flag #1",
+        "heading": "Constant Exhaustion & Fatigue",
+        "body_text": "<p>If you are constantly feeling drained-no matter how much you sleep-it could be a sign of nutrient gaps. Vitamins like B6, B12, and Magnesium help support energy and fight fatigue.</p><p>Without enough, your body can struggle to stay energized, focused, and emotionally balanced.</p>",
+        "highlight_text": "<p>The right blend of nutrients can help refill those gaps-boosting steady energy, clearer focus, and fewer crashes.</p>",
+        "button_text": "Support Energy With Nutrition",
+        "button_link": "/",
+        "right_image": "shopify://shop_images/wds-3-red-flags-lander-lp-mod-2.avif",
+        "badge_font_family": "inherit",
+        "badge_font_weight": "700",
+        "badge_font_size": "14px",
+        "badge_font_size_mobile": "12px",
+        "badge_bg": "#486CED",
+        "badge_text_color": "#ffffff",
+        "badge_radius": 0,
+        "heading_font_family": "inherit",
+        "heading_font_weight": "700",
+        "heading_size": "48px",
+        "mobile_heading_size": "34px",
+        "body_font_family": "inherit",
+        "body_font_weight": "400",
+        "body_size": "18px",
+        "mobile_body_size": "16px",
+        "highlight_font_family": "inherit",
+        "highlight_font_weight": "600",
+        "highlight_size": "18px",
+        "highlight_size_mobile": "16px",
+        "check_bg": "#5bd79b",
+        "check_color": "#ffffff",
+        "button_font_family": "inherit",
+        "button_font_weight": "700",
+        "button_font_size": "16px",
+        "button_font_size_mobile": "14px",
+        "button_radius": 32,
+        "button_bg": "#486CED",
+        "button_text_color": "#ffffff",
+        "button_border": "#486CED",
+        "background_color": "#ffffff",
+        "text_color": "#152e3c",
+        "subtext_color": "#4b5668",
+        "image_card_bg": "rgba(0,0,0,0)",
+        "image_card_padding": 0,
+        "image_card_shadow": false,
+        "text_align": "left",
+        "mobile_text_align": "left",
+        "content_max_width": 1200,
+        "margin_y_desktop": 120,
+        "margin_x_desktop": 120,
+        "margin_y_mobile": 0,
+        "margin_x_mobile": 0,
+        "padding_desktop": 84,
+        "desktop_side_padding": 64,
+        "padding_mobile": 32,
+        "mobile_side_padding": 18,
+        "stack_gap": 18,
+        "stack_gap_mobile": 20
+      }
+    }
+  ]
+}
+{% endschema %}
