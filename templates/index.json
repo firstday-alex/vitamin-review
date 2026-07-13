@@ -9,6 +9,28 @@
  */
 {
   "sections": {
+    "objet_charger_hero_9xPk99": {
+      "type": "objet-charger-hero",
+      "name": "Objet Charger Hero",
+      "settings": {
+        "background_image": "shopify://shop_images/your-vitamin-review-hero.jpg",
+        "section_height": 100,
+        "overlay_opacity": 100,
+        "logo_text": "orna",
+        "eyebrow": "",
+        "heading": "Careful Research, Better Nutrition, No Snake Oil",
+        "price_text": "Top Tips from Industry Experts",
+        "date_text": "Free Newsletter Expiration Offer in 2 days!",
+        "show_form": true,
+        "email_placeholder": "Enter email",
+        "button_label": "Subscribe Free",
+        "success_message": "Thanks! Check your inbox for your discount.",
+        "text_color": "#ffffff",
+        "button_background": "#5a5a5a",
+        "button_text_color": "#ffffff",
+        "content_max_width": 520
+      }
+    },
     "hero_jVaWmY": {
       "type": "hero",
       "blocks": {
@@ -59,6 +81,7 @@
         "text_YLPk4p",
         "button_H9gpTf"
       ],
+      "disabled": true,
       "name": "t:names.hero",
       "settings": {
         "media_type_1": "image",
@@ -431,6 +454,7 @@
     }
   },
   "order": [
+    "objet_charger_hero_9xPk99",
     "hero_jVaWmY",
     "featured_blog_posts_LfmhWd",
     "product_list_fa6P9H"
