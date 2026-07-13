@@ -1,150 +1,161 @@
 {%- comment -%}
-  Objet Charger Hero
-  A fully self-contained landing hero section: full-bleed background image,
-  centered logo, headline, email capture with a discount CTA, and price/date lines.
-  All HTML, CSS and JS live inside this file.
+  Objet Charger Hero (block-based)
+
+  A Horizon-native hero built on universal blocks. The section owns the branded
+  "chrome" — full-bleed background media, overlay, and a pinned top logo — while
+  all content (heading, email capture, price/date, etc.) is authored with
+  standard @theme blocks via {% content_for 'blocks' %}, so merchants can add,
+  remove and reorder it in the theme editor.
+
+  For an email capture, drop in the theme's "Email signup" block — it uses
+  Shopify's standard {% form 'customer' %}.
 {%- endcomment -%}
 
 {%- liquid
   assign s = section.settings
-  assign uid = section.id
+
+  assign has_mobile_image = false
+  if s.image_mobile != blank
+    assign has_mobile_image = true
+  endif
+
+  assign sizes = '100vw'
+  assign widths = '750, 1100, 1500, 2000, 2600, 3200, 3840'
+  assign mobile_widths = '450, 600, 900, 1200, 1600'
+
+  assign fetch_priority = 'auto'
+  if section.index == 1
+    assign fetch_priority = 'high'
+  endif
 -%}
 
-<div
-  id="ObjetHero-{{ uid }}"
-  class="objet-hero"
-  style="
-    --objet-min-height: {{ s.section_height }}svh;
-    --objet-overlay-opacity: {{ s.overlay_opacity | divided_by: 100.0 }};
-    --objet-text-color: {{ s.text_color }};
-    --objet-content-max-width: {{ s.content_max_width }}px;
-    --objet-btn-bg: {{ s.button_background }};
-    --objet-btn-color: {{ s.button_text_color }};
-  "
->
-  {%- comment -%} Background media {%- endcomment -%}
-  <div class="objet-hero__media">
-    {%- if s.background_image != blank -%}
+{%- capture media -%}
+  {%- if s.image != blank and has_mobile_image -%}
+    <picture class="objet-hero__media">
+      <source
+        media="(max-width: 749px)"
+        srcset="
+          {%- assign mw = mobile_widths | split: ', ' -%}
+          {%- for w in mw -%}
+            {{ s.image_mobile | image_url: width: w }} {{ w }}w{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        "
+      >
       {{
-        s.background_image
+        s.image
         | image_url: width: 3840
         | image_tag:
-          widths: '750, 1100, 1500, 2000, 2600, 3200, 3840',
-          sizes: '100vw',
+          widths: widths,
+          sizes: sizes,
           class: 'objet-hero__img',
-          fetchpriority: 'high',
-          alt: s.background_image.alt | default: s.heading
+          fetchpriority: fetch_priority,
+          alt: s.image.alt | default: ''
       }}
-    {%- else -%}
-      {{ 'lifestyle-1' | placeholder_svg_tag: 'objet-hero__img objet-hero__img--placeholder' }}
-    {%- endif -%}
-    <div class="objet-hero__overlay"></div>
-  </div>
-
-  {%- comment -%} Logo / brand at the top {%- endcomment -%}
-  {%- if s.logo != blank -%}
-    <div class="objet-hero__logo">
-      {{
-        s.logo
-        | image_url: width: 600
-        | image_tag: widths: '150, 300, 450, 600', class: 'objet-hero__logo-img', alt: s.logo_text | default: 'Logo'
-      }}
-    </div>
-  {%- elsif s.logo_text != blank -%}
-    <div class="objet-hero__logo objet-hero__logo--text">{{ s.logo_text }}</div>
+    </picture>
+  {%- elsif s.image != blank -%}
+    {{
+      s.image
+      | image_url: width: 3840
+      | image_tag:
+        widths: widths,
+        sizes: sizes,
+        class: 'objet-hero__img',
+        fetchpriority: fetch_priority,
+        alt: s.image.alt | default: ''
+    }}
+  {%- else -%}
+    {{ 'lifestyle-1' | placeholder_svg_tag: 'objet-hero__img objet-hero__img--placeholder' }}
   {%- endif -%}
+{%- endcapture -%}
 
-  {%- comment -%} Content block {%- endcomment -%}
-  <div class="objet-hero__content">
-    {%- if s.eyebrow != blank -%}
-      <p class="objet-hero__eyebrow">{{ s.eyebrow }}</p>
+<div
+  id="ObjetHero-{{ section.id }}"
+  class="objet-hero color-{{ s.color_scheme }}"
+  style="
+    {%- if s.section_height == 'custom' -%}
+      --objet-min-height: {{ s.section_height_custom }}svh;
+    {%- elsif s.section_height == 'full-screen' -%}
+      --objet-min-height: 100svh;
+    {%- else -%}
+      --objet-min-height: var(--section-height-{{ s.section_height }});
     {%- endif -%}
-    {%- if s.heading != blank -%}
-      <h1 class="objet-hero__heading">{{ s.heading }}</h1>
-    {%- endif -%}
+  "
+  {% if request.visual_preview_mode %}
+    data-shopify-visual-preview
+  {% endif %}
+>
+  <div
+    class="objet-hero__container spacing-style"
+    style="{% render 'spacing-style', settings: s %}"
+  >
+    <div class="objet-hero__media-grid">
+      {%- if s.toggle_overlay -%}
+        {% render 'overlay', settings: s %}
+      {%- endif -%}
+      {{ media }}
+    </div>
 
-    {%- if s.show_form -%}
-      {%- form 'customer', class: 'objet-hero__form-wrap' -%}
-        <input type="hidden" name="contact[tags]" value="newsletter, objet-charger">
-        <div class="objet-hero__form">
-          <label class="visually-hidden" for="ObjetEmail-{{ uid }}">{{ s.email_placeholder }}</label>
-          <input
-            class="objet-hero__input"
-            id="ObjetEmail-{{ uid }}"
-            type="email"
-            name="contact[email]"
-            placeholder="{{ s.email_placeholder }}"
-            autocorrect="off"
-            autocapitalize="off"
-            autocomplete="email"
-            required
-            {%- if form.errors and form.id == blank %}
-              autofocus
-              aria-invalid="true"
-              aria-describedby="ObjetMessage-{{ uid }}"
-            {%- elsif form.posted_successfully? and form.id == blank %}
-              aria-describedby="ObjetMessage-{{ uid }}"
-            {%- endif %}
-          >
-          <button class="objet-hero__button" type="submit">{{ s.button_label }}</button>
-        </div>
-
-        {%- if form.errors and form.id == blank -%}
-          <p
-            id="ObjetMessage-{{ uid }}"
-            class="objet-hero__message"
-            data-state="error"
-            tabindex="-1"
-          >
-            {{- form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email -}}
-          </p>
-        {%- elsif form.posted_successfully? and form.id == blank -%}
-          <p
-            id="ObjetMessage-{{ uid }}"
-            class="objet-hero__message"
-            data-state="success"
-            tabindex="-1"
-          >
-            {{ s.success_message }}
-          </p>
-        {%- endif -%}
-      {%- endform -%}
+    {%- if s.logo != blank -%}
+      <div class="objet-hero__logo">
+        {{
+          s.logo
+          | image_url: width: 600
+          | image_tag: widths: '150, 300, 450, 600', class: 'objet-hero__logo-img', alt: shop.name
+        }}
+      </div>
+    {%- elsif s.logo_text != blank -%}
+      <div class="objet-hero__logo objet-hero__logo--text">{{ s.logo_text }}</div>
     {%- endif -%}
 
-    {%- if s.price_text != blank -%}
-      <p class="objet-hero__price">{{ s.price_text }}</p>
-    {%- endif -%}
-    {%- if s.date_text != blank -%}
-      <p class="objet-hero__date">{{ s.date_text }}</p>
-    {%- endif -%}
+    <div
+      class="
+        objet-hero__content-wrapper
+        section-content-wrapper
+        layout-panel-flex
+        layout-panel-flex--column
+        {% if s.vertical_on_mobile %}mobile-column{% endif %}
+        {{ s.section_width }}
+      "
+      style="{% render 'layout-panel-style', settings: s %}"
+    >
+      {% content_for 'blocks' %}
+    </div>
   </div>
 </div>
 
 {% stylesheet %}
   .objet-hero {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
     min-height: var(--objet-min-height, 100svh);
-    padding: 24px 20px 48px;
-    box-sizing: border-box;
+  }
+
+  .objet-hero[data-shopify-visual-preview] {
+    min-height: 600px;
+  }
+
+  .objet-hero__container {
+    position: relative;
+    display: grid;
     overflow: hidden;
-    color: var(--objet-text-color, #ffffff);
-    text-align: center;
+    min-height: inherit;
+  }
+
+  .objet-hero__media-grid,
+  .objet-hero__content-wrapper {
+    grid-area: 1 / 1;
+  }
+
+  .objet-hero__media-grid {
+    position: relative;
+    z-index: var(--layer-base, 0);
   }
 
   .objet-hero__media,
-  .objet-hero__overlay,
   .objet-hero__img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-  }
-
-  .objet-hero__img {
     object-fit: cover;
     object-position: center;
   }
@@ -153,23 +164,15 @@
     background: #e9e6df;
   }
 
-  .objet-hero__overlay {
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0) 35%,
-      rgba(0, 0, 0, calc(0.55 * var(--objet-overlay-opacity, 1))) 100%
-    );
-  }
-
   .objet-hero__logo {
     position: absolute;
     top: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    width: 100%;
+    left: 0;
+    right: 0;
+    z-index: var(--layer-raised, 3);
     display: flex;
     justify-content: center;
+    pointer-events: none;
   }
 
   .objet-hero__logo-img {
@@ -179,141 +182,35 @@
   }
 
   .objet-hero__logo--text {
+    font-family: var(--font-primary--family, inherit);
     font-size: 2.4rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     line-height: 1;
+    color: rgb(var(--color-foreground));
   }
 
-  .objet-hero__content {
+  .objet-hero__content-wrapper {
     position: relative;
-    z-index: 2;
-    width: 100%;
-    max-width: var(--objet-content-max-width, 520px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
+    z-index: var(--layer-flat, 1);
   }
 
-  .objet-hero__eyebrow {
-    margin: 0;
-    font-size: 2.1rem;
-    font-weight: 400;
-    line-height: 1.1;
+  /* Let interactive block content receive clicks while the wrapper itself doesn't block the image. */
+  .objet-hero__content-wrapper {
+    pointer-events: none;
   }
 
-  .objet-hero__heading {
-    margin: 0 0 22px;
-    font-size: 2.6rem;
-    font-weight: 400;
-    line-height: 1.1;
-  }
-
-  .objet-hero__form-wrap {
-    width: 100%;
-    margin: 0 0 20px;
-  }
-
-  .objet-hero__form {
-    display: flex;
-    width: 100%;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
-  }
-
-  .objet-hero__input {
-    flex: 1 1 auto;
-    min-width: 0;
-    border: none;
-    padding: 18px 20px;
-    font-size: 1.05rem;
-    color: #222;
-    background: #ffffff;
-    outline: none;
-  }
-
-  .objet-hero__input::placeholder {
-    color: #9a9a9a;
-  }
-
-  .objet-hero__input:focus-visible {
-    box-shadow: inset 0 0 0 2px rgba(60, 60, 60, 0.4);
-  }
-
-  .objet-hero__button {
-    flex: 0 0 auto;
-    border: none;
-    padding: 0 26px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    color: var(--objet-btn-color, #ffffff);
-    background: var(--objet-btn-bg, rgba(90, 90, 90, 0.85));
-    cursor: pointer;
-    white-space: nowrap;
-    transition: filter 0.15s ease, background 0.15s ease;
-  }
-
-  .objet-hero__button:hover {
-    filter: brightness(1.08);
-  }
-
-  .objet-hero__button:active {
-    filter: brightness(0.95);
-  }
-
-  .objet-hero__message {
-    margin: 10px 0 0;
-    font-size: 0.95rem;
-    font-weight: 500;
-  }
-
-  .objet-hero__message[data-state='error'] {
-    color: #ffd0d0;
-  }
-
-  .objet-hero__price {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 700;
-  }
-
-  .objet-hero__date {
-    margin: 2px 0 0;
-    font-size: 1.1rem;
-    font-weight: 400;
-    opacity: 0.95;
-  }
-
-  .visually-hidden {
-    position: absolute !important;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  .objet-hero__content-wrapper :is(a, button, input, textarea, select, label, details, summary) {
+    pointer-events: auto;
   }
 
   @media screen and (min-width: 750px) {
-    .objet-hero {
-      padding-bottom: 72px;
-    }
-
-    .objet-hero__eyebrow {
-      font-size: 2.6rem;
-    }
-
-    .objet-hero__heading {
-      font-size: 3.2rem;
-    }
-
     .objet-hero__logo-img {
       max-width: 200px;
+    }
+
+    .objet-hero__logo--text {
+      font-size: 2.8rem;
     }
   }
 {% endstylesheet %}
@@ -322,7 +219,12 @@
 {
   "name": "Objet Charger Hero",
   "tag": "section",
-  "class": "objet-charger-hero-section",
+  "class": "objet-charger-hero-section section-wrapper",
+  "blocks": [
+    {
+      "type": "@theme"
+    }
+  ],
   "settings": [
     {
       "type": "header",
@@ -330,28 +232,14 @@
     },
     {
       "type": "image_picker",
-      "id": "background_image",
+      "id": "image",
       "label": "Background image"
     },
     {
-      "type": "range",
-      "id": "section_height",
-      "label": "Section height",
-      "min": 50,
-      "max": 100,
-      "step": 5,
-      "unit": "svh",
-      "default": 100
-    },
-    {
-      "type": "range",
-      "id": "overlay_opacity",
-      "label": "Bottom overlay strength",
-      "min": 0,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
-      "default": 100
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile background image",
+      "info": "Optional. Falls back to the desktop image."
     },
     {
       "type": "header",
@@ -361,7 +249,7 @@
       "type": "image_picker",
       "id": "logo",
       "label": "Logo image",
-      "info": "Optional. If empty, the logo text below is used."
+      "info": "Pinned to the top center. If empty, the logo text below is used."
     },
     {
       "type": "text",
@@ -371,101 +259,259 @@
     },
     {
       "type": "header",
-      "content": "Content"
+      "content": "Layout"
     },
     {
-      "type": "text",
-      "id": "eyebrow",
-      "label": "Eyebrow",
-      "default": "Meet"
+      "type": "select",
+      "id": "section_width",
+      "label": "Content width",
+      "options": [
+        { "value": "page-width", "label": "Page" },
+        { "value": "full-width", "label": "Full" }
+      ],
+      "default": "page-width"
     },
     {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Objet Charger"
-    },
-    {
-      "type": "text",
-      "id": "price_text",
-      "label": "Price line",
-      "default": "From $70 for Early Birds"
-    },
-    {
-      "type": "text",
-      "id": "date_text",
-      "label": "Date line",
-      "default": "August 2nd, 2026"
-    },
-    {
-      "type": "header",
-      "content": "Email capture"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_form",
-      "label": "Show email form",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "email_placeholder",
-      "label": "Email placeholder",
-      "default": "Enter email"
-    },
-    {
-      "type": "text",
-      "id": "button_label",
-      "label": "Button label",
-      "default": "GET 30% OFF"
-    },
-    {
-      "type": "paragraph",
-      "content": "Submissions create a customer profile and are added to your email marketing list."
-    },
-    {
-      "type": "text",
-      "id": "success_message",
-      "label": "Success message",
-      "default": "Thanks! Check your inbox for your discount."
-    },
-    {
-      "type": "header",
-      "content": "Colors"
-    },
-    {
-      "type": "color",
-      "id": "text_color",
-      "label": "Text color",
-      "default": "#ffffff"
-    },
-    {
-      "type": "color",
-      "id": "button_background",
-      "label": "Button background",
-      "default": "#5a5a5a"
-    },
-    {
-      "type": "color",
-      "id": "button_text_color",
-      "label": "Button text color",
-      "default": "#ffffff"
+      "type": "select",
+      "id": "section_height",
+      "label": "Section height",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "full-screen", "label": "Full screen" },
+        { "value": "custom", "label": "Custom" }
+      ],
+      "default": "full-screen"
     },
     {
       "type": "range",
-      "id": "content_max_width",
-      "label": "Content max width",
-      "min": 360,
-      "max": 720,
-      "step": 20,
+      "id": "section_height_custom",
+      "label": "Custom height",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "svh",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_height == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "content_direction",
+      "label": "Content direction",
+      "options": [
+        { "value": "column", "label": "Vertical" },
+        { "value": "row", "label": "Horizontal" }
+      ],
+      "default": "column"
+    },
+    {
+      "type": "checkbox",
+      "id": "vertical_on_mobile",
+      "label": "Stack content on mobile",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "horizontal_alignment_flex_direction_column",
+      "label": "Horizontal alignment",
+      "options": [
+        { "value": "flex-start", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "flex-end", "label": "Right" }
+      ],
+      "default": "center",
+      "visible_if": "{{ section.settings.content_direction != 'row' }}"
+    },
+    {
+      "type": "select",
+      "id": "vertical_alignment_flex_direction_column",
+      "label": "Vertical position",
+      "options": [
+        { "value": "flex-start", "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "flex-end", "label": "Bottom" },
+        { "value": "space-between", "label": "Space between" }
+      ],
+      "default": "flex-end",
+      "visible_if": "{{ section.settings.content_direction == 'column' }}"
+    },
+    {
+      "type": "select",
+      "id": "horizontal_alignment",
+      "label": "Horizontal alignment",
+      "options": [
+        { "value": "flex-start", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "flex-end", "label": "Right" },
+        { "value": "space-between", "label": "Space between" }
+      ],
+      "default": "center",
+      "visible_if": "{{ section.settings.content_direction == 'row' }}"
+    },
+    {
+      "type": "select",
+      "id": "vertical_alignment",
+      "label": "Vertical position",
+      "options": [
+        { "value": "flex-start", "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "flex-end", "label": "Bottom" }
+      ],
+      "default": "flex-end",
+      "visible_if": "{{ section.settings.content_direction == 'row' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "align_baseline",
+      "label": "Align baseline",
+      "default": false,
+      "visible_if": "{{ section.settings.vertical_alignment == 'flex-end' }}"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
       "unit": "px",
-      "default": 520
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "toggle_overlay",
+      "label": "Show overlay",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "alpha": true,
+      "default": "#00000080",
+      "visible_if": "{{ section.settings.toggle_overlay }}"
+    },
+    {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "Overlay style",
+      "options": [
+        { "value": "solid", "label": "Solid" },
+        { "value": "gradient", "label": "Gradient" }
+      ],
+      "default": "gradient",
+      "visible_if": "{{ section.settings.toggle_overlay }}"
+    },
+    {
+      "type": "select",
+      "id": "gradient_direction",
+      "label": "Gradient direction",
+      "options": [
+        { "value": "to top", "label": "Up" },
+        { "value": "to bottom", "label": "Down" }
+      ],
+      "default": "to top",
+      "visible_if": "{{ section.settings.toggle_overlay and section.settings.overlay_style == 'gradient' }}"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
     }
   ],
   "presets": [
     {
       "name": "Objet Charger Hero",
-      "category": "Custom [AT]"
+      "category": "Banners",
+      "settings": {
+        "section_height": "full-screen",
+        "color_scheme": "scheme-5",
+        "vertical_alignment_flex_direction_column": "flex-end",
+        "horizontal_alignment_flex_direction_column": "center",
+        "gap": 8,
+        "toggle_overlay": true,
+        "overlay_style": "gradient",
+        "gradient_direction": "to top"
+      },
+      "blocks": {
+        "eyebrow": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Meet</p>",
+            "alignment": "center",
+            "type_preset": "h4",
+            "width": "fit-content"
+          }
+        },
+        "heading": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Objet Charger</p>",
+            "alignment": "center",
+            "type_preset": "h1",
+            "width": "fit-content"
+          }
+        },
+        "email": {
+          "type": "email-signup",
+          "settings": {
+            "border_style": "all",
+            "border_radius": 10,
+            "integrated_button": true,
+            "display_type": "text",
+            "label": "GET 30% OFF"
+          }
+        },
+        "price": {
+          "type": "text",
+          "settings": {
+            "text": "<p><strong>From $70 for Early Birds</strong></p>",
+            "alignment": "center",
+            "type_preset": "h5",
+            "width": "fit-content"
+          }
+        },
+        "date": {
+          "type": "text",
+          "settings": {
+            "text": "<p>August 2nd, 2026</p>",
+            "alignment": "center",
+            "type_preset": "rte",
+            "width": "fit-content"
+          }
+        }
+      },
+      "block_order": ["eyebrow", "heading", "email", "price", "date"]
     }
   ]
 }
