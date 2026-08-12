@@ -1,0 +1,508 @@
+{%- comment -%}
+  Before You Decide — FAQ
+
+  Standalone FAQ accordion built from the "FAQ" Figma frame (node 4676:128079).
+  Each question is a soft-blue card with a hairline plus glyph that rotates into
+  a close mark when the row opens. A dashed callout under the list points at the
+  full FAQ page.
+
+  Rows reuse the theme's <accordion-custom> element (snippets/accordion-custom-component.liquid,
+  behavior from assets/accordion-custom.js, loaded globally in snippets/scripts.liquid)
+  so open/close animation matches the rest of the theme.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign questions = section.blocks | where: 'type', 'question'
+
+  assign show_callout = false
+  if s.show_callout and s.callout_heading != blank
+    assign show_callout = true
+  endif
+  if s.show_callout and s.callout_body != blank
+    assign show_callout = true
+  endif
+-%}
+
+<div
+  class="byd-faq"
+  id="BydFaq-{{ section.id }}"
+  {% if s.single_open %}data-byd-faq-single-open{% endif %}
+  style="
+    --byd-faq-bg: {{ s.background_color }};
+    --byd-faq-text: {{ s.text_color }};
+    --byd-faq-item-bg: {{ s.item_background }};
+    --byd-faq-icon: {{ s.icon_color }};
+    --byd-faq-callout-border: {{ s.callout_border_color }};
+    --byd-faq-link: {{ s.link_color }};
+    --byd-faq-max-width: {{ s.max_width }}px;
+    --byd-faq-heading-size: {{ s.heading_size }}px;
+    --byd-faq-padding-top: {{ s.padding_top }}px;
+    --byd-faq-padding-bottom: {{ s.padding_bottom }}px;
+    --byd-faq-align: {{ s.heading_alignment }};
+  "
+>
+  <div class="byd-faq__inner">
+    {%- if s.heading != blank -%}
+      <div class="byd-faq__top">
+        <{{ s.heading_tag }} class="byd-faq__heading">{{ s.heading }}</{{ s.heading_tag }}>
+      </div>
+    {%- endif -%}
+
+    {%- if questions.size > 0 -%}
+      <div class="byd-faq__list">
+        {%- for block in questions -%}
+          {%- capture faq_row -%}
+            <details class="byd-faq__details" data-testid="accordion-details" {{ block.shopify_attributes }}>
+              <summary class="byd-faq__summary">
+                <span class="byd-faq__question">{{ block.settings.question | escape }}</span>
+                <span class="byd-faq__icon" aria-hidden="true">
+                  {%- comment -%}
+                    Exported from Figma (node I4676:128086;169:229). 14.9127 leaf inside a
+                    20 box — kept as percentages so the geometry survives any icon size.
+                  {%- endcomment -%}
+                  <svg
+                    class="byd-faq__icon-glyph"
+                    viewBox="0 0 14.9127 14.9127"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    focusable="false"
+                  >
+                    <path
+                      d="M14.4204 6.96399C14.6923 6.96399 14.9127 7.18441 14.9127 7.45637C14.9127 7.7283 14.6923 7.94874 14.4204 7.94874H7.94874V14.4204C7.94871 14.6923 7.72831 14.9127 7.45637 14.9127C7.18442 14.9127 6.96402 14.6923 6.96399 14.4204V7.94874H0.492376C0.220433 7.94874 2.84126e-05 7.7283 0 7.45637C0 7.18441 0.220415 6.96399 0.492376 6.96399L6.96399 6.96399L6.96399 0.492376C6.96399 0.220415 7.18441 0 7.45637 0C7.72833 0 7.94874 0.220415 7.94874 0.492376V6.96399L14.4204 6.96399Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
+              </summary>
+
+              {%- if block.settings.answer != blank -%}
+                <div class="details-content byd-faq__answer">
+                  <div class="byd-faq__answer-inner rte">{{ block.settings.answer }}</div>
+                </div>
+              {%- endif -%}
+            </details>
+          {%- endcapture -%}
+
+          {% render 'accordion-custom-component', children: faq_row, class: 'byd-faq__item' %}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if show_callout -%}
+      <div class="byd-faq__callout">
+        <p class="byd-faq__callout-text">
+          {%- if s.callout_heading != blank -%}
+            {{ s.callout_heading }}
+          {%- endif -%}
+          {%- if s.callout_heading != blank and s.callout_body != blank %}<br>{% endif -%}
+          {%- if s.callout_body != blank -%}
+            {{ s.callout_body }}
+          {%- endif -%}
+        </p>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .byd-faq {
+    background: var(--byd-faq-bg, #ffffff);
+    padding: var(--byd-faq-padding-top, 40px) 16px var(--byd-faq-padding-bottom, 40px);
+  }
+
+  .byd-faq__inner {
+    display: flex;
+    flex-direction: column;
+    /* spacing/xs */
+    gap: 20px;
+    max-width: var(--byd-faq-max-width, 720px);
+    margin-inline: auto;
+  }
+
+  /* ── Heading ── */
+  .byd-faq__top {
+    text-align: var(--byd-faq-align, left);
+  }
+
+  .byd-faq__heading {
+    margin: 0;
+    font-family: 'sofia-pro', sans-serif;
+    font-weight: 500;
+    font-size: 25px;
+    line-height: 1.3;
+    letter-spacing: 0;
+    color: var(--byd-faq-text, #2c3d50);
+    overflow-wrap: break-word;
+  }
+
+  .byd-faq__heading strong,
+  .byd-faq__heading b {
+    font-weight: 700;
+  }
+
+  /* ── Question list ── */
+  .byd-faq__list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .byd-faq__item {
+    display: block;
+    /* color/surface/morning-blue */
+    background: var(--byd-faq-item-bg, #f2fbff);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .byd-faq__summary {
+    display: flex;
+    align-items: center;
+    /* spacing/xxs */
+    gap: 16px;
+    padding: 16px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .byd-faq__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .byd-faq__summary::marker {
+    content: '';
+  }
+
+  .byd-faq__summary:focus-visible {
+    outline: 2px solid var(--byd-faq-link, #476ded);
+    outline-offset: -2px;
+    border-radius: 8px;
+  }
+
+  .byd-faq__question {
+    flex: 1 0 0;
+    min-width: 0;
+    font-family: 'sofia-pro', sans-serif;
+    /* Paragraph/Regular/MD/Mobile */
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.4;
+    letter-spacing: 0;
+    color: var(--byd-faq-text, #2c3d50);
+    overflow-wrap: break-word;
+  }
+
+  /* ── Plus glyph: 14.9127 leaf centred in a 20 box, per the Figma asset ── */
+  .byd-faq__icon {
+    position: relative;
+    flex: 0 0 auto;
+    display: block;
+    width: var(--byd-faq-icon-size, 20px);
+    height: var(--byd-faq-icon-size, 20px);
+    overflow: clip;
+    color: var(--byd-faq-icon, #2c3d50);
+    transition: transform var(--animation-speed-slow, 0.3s) var(--animation-easing, ease);
+  }
+
+  .byd-faq__icon-glyph {
+    position: absolute;
+    display: block;
+    top: 14.8%;
+    left: 14.8%;
+    width: 74.5635%;
+    height: 74.5635%;
+  }
+
+  .byd-faq__details[open] .byd-faq__icon {
+    transform: rotate(45deg);
+  }
+
+  /* ── Answer ── */
+  .byd-faq__answer-inner {
+    padding: 0 16px 16px;
+    font-family: 'sofia-pro', sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--byd-faq-text, #2c3d50);
+  }
+
+  .byd-faq__answer-inner > :first-child {
+    margin-top: 0;
+  }
+
+  .byd-faq__answer-inner > :last-child {
+    margin-bottom: 0;
+  }
+
+  .byd-faq__answer-inner a {
+    color: var(--byd-faq-link, #476ded);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* ── Dashed callout ── */
+  .byd-faq__callout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    /* color/helper/outline */
+    border: 1px dashed var(--byd-faq-callout-border, #d7effa);
+    border-radius: 8px;
+  }
+
+  .byd-faq__callout-text {
+    flex: 1 0 0;
+    min-width: 0;
+    margin: 0;
+    font-family: 'sofia-pro', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--byd-faq-text, #2c3d50);
+    overflow-wrap: break-word;
+  }
+
+  .byd-faq__callout-text a {
+    color: var(--byd-faq-link, #476ded);
+    text-decoration: underline;
+    text-decoration-skip-ink: none;
+    text-underline-position: from-font;
+  }
+
+  /* ── Desktop ── */
+  @media screen and (min-width: 750px) {
+    .byd-faq {
+      padding-inline: 24px;
+    }
+
+    .byd-faq__heading {
+      font-size: var(--byd-faq-heading-size, 32px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .byd-faq__icon {
+      transition-duration: 0.01ms;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  /* Close sibling rows when a question opens inside a [data-byd-faq-single-open] section.
+     Listens in the capture phase because `toggle` does not bubble. */
+  document.addEventListener(
+    'toggle',
+    (event) => {
+      const details = event.target;
+      if (!(details instanceof HTMLDetailsElement) || !details.open) return;
+
+      const section = details.closest('[data-byd-faq-single-open]');
+      if (!section) return;
+
+      section.querySelectorAll('.byd-faq__details[open]').forEach((sibling) => {
+        if (sibling !== details) sibling.open = false;
+      });
+    },
+    true
+  );
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Before You Decide FAQ",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Bold part of the heading with the B button.",
+      "default": "Before You <strong>Decide</strong>"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading tag",
+      "options": [
+        { "value": "h2", "label": "h2" },
+        { "value": "h3", "label": "h3" },
+        { "value": "h4", "label": "h4" },
+        { "value": "p", "label": "Paragraph" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size on desktop",
+      "info": "Mobile stays at 25px to match the design.",
+      "min": 20,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Behavior"
+    },
+    {
+      "type": "checkbox",
+      "id": "single_open",
+      "label": "Only one question open at a time",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "\"More questions?\" callout"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_callout",
+      "label": "Show callout",
+      "default": true
+    },
+    {
+      "type": "inline_richtext",
+      "id": "callout_heading",
+      "label": "Callout first line",
+      "default": "More questions?"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "callout_body",
+      "label": "Callout second line",
+      "info": "Link the FAQ page with the link button.",
+      "default": "Find answers on our <a href=\"/pages/faq\">FAQ page</a>."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max content width",
+      "min": 480,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "default": 720
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#2C3D50"
+    },
+    {
+      "type": "color",
+      "id": "item_background",
+      "label": "Question card background",
+      "default": "#F2FBFF"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Plus icon",
+      "default": "#2C3D50"
+    },
+    {
+      "type": "color",
+      "id": "callout_border_color",
+      "label": "Callout dashed border",
+      "default": "#D7EFFA"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Links",
+      "default": "#476DED"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "What are the full nutrition facts?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Use this text to answer the question in as much detail as your customers need.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Before You Decide FAQ",
+      "blocks": [
+        { "type": "question", "settings": { "question": "What are the full nutrition facts?" } },
+        { "type": "question", "settings": { "question": "Why do you have bellow 100% DV?" } },
+        { "type": "question", "settings": { "question": "What else is different about First Day?" } },
+        { "type": "question", "settings": { "question": "Should I subscribe?" } },
+        { "type": "question", "settings": { "question": "Which scientific studies back you up?" } }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.overlay"]
+  }
+}
+{% endschema %}

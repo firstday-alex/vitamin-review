@@ -1,0 +1,461 @@
+{%- comment -%}
+  Article TOC Panel — "In this article"
+
+  A table of contents that sits in the gutter beside the article body on wide
+  screens and folds into a card above the body copy everywhere else. The list is
+  built at runtime from the headings in the article (see assets/article-toc.js),
+  so nothing has to be maintained per post.
+
+  Open/close reuses the theme's <accordion-custom> element
+  (snippets/accordion-custom-component.liquid) so the expand animation matches
+  the rest of the theme.
+
+  The panel hides itself when the article has fewer headings than "Minimum
+  headings", so short posts are unaffected.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+
+  assign heading_selector = 'h2'
+  if s.include_h3
+    assign heading_selector = 'h2, h3'
+  endif
+-%}
+
+<script src="{{ 'article-toc.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+{%- capture toc_card -%}
+  <details class="article-toc__details">
+    <summary class="article-toc__summary">
+      <span class="article-toc__title">{{ s.heading | escape }}</span>
+      <span class="article-toc__chevron" aria-hidden="true">
+        <svg viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+          <path
+            d="M1 1L8 8L15 1"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+    </summary>
+
+    <div class="details-content article-toc__content">
+      <ol class="article-toc__list" data-article-toc-list></ol>
+    </div>
+  </details>
+{%- endcapture -%}
+
+<article-toc
+  class="article-toc"
+  data-content-selector="{{ s.content_selector | default: '.blog-post-content' | escape }}"
+  data-heading-selector="{{ heading_selector }}"
+  data-min-headings="{{ s.min_headings }}"
+  data-panel-width="{{ s.panel_width }}"
+  data-side="{{ s.side }}"
+  data-numbered="{% if s.show_numbers %}true{% else %}false{% endif %}"
+  data-scroll-offset="{{ s.scroll_offset }}"
+  data-hide-out-of-view="{% if s.hide_out_of_view %}true{% else %}false{% endif %}"
+  role="navigation"
+  aria-label="{{ s.heading | escape }}"
+  style="
+    --article-toc-width: {{ s.panel_width }}px;
+    --article-toc-top: {{ s.top_offset }}px;
+    --article-toc-radius: {{ s.corner_radius }}px;
+    --article-toc-header-bg: {{ s.header_background }};
+    --article-toc-header-text: {{ s.header_text }};
+    --article-toc-body-bg: {{ s.body_background }};
+    --article-toc-text: {{ s.text_color }};
+    --article-toc-number: {{ s.number_color }};
+    --article-toc-divider: {{ s.divider_color }};
+    --article-toc-active: {{ s.active_color }};
+    --article-toc-font-size: {{ s.font_size }}px;
+    --article-toc-heading-size: {{ s.heading_size }}px;
+  "
+  {{ section.shopify_attributes }}
+>
+  {% render 'accordion-custom-component',
+    children: toc_card,
+    class: 'article-toc__accordion',
+    open_by_default_on_desktop: s.open_on_desktop,
+    open_by_default_on_mobile: s.open_on_mobile
+  %}
+</article-toc>
+
+{% stylesheet %}
+  /* Hidden until article-toc.js has measured the page — avoids a flash of an
+     empty card, and means a JS failure leaves the article untouched. */
+  .article-toc:not([data-mode]),
+  .article-toc[data-mode='off'] {
+    display: none;
+  }
+
+  .article-toc {
+    --article-toc-shadow: 0 10px 30px rgb(0 0 0 / 8%);
+
+    display: block;
+    font-family: 'sofia-pro', sans-serif;
+  }
+
+  .article-toc[data-mode='inline'] {
+    width: 100%;
+    max-width: var(--normal-content-width);
+    margin-inline: auto;
+  }
+
+  .article-toc[data-mode='rail'] {
+    /* Distance from the top of the viewport; the sticky-header rule below adds
+       the live header height to it when the header is pinned. */
+    --article-toc-anchor: var(--article-toc-top, 32px);
+
+    position: fixed;
+    top: var(--article-toc-anchor);
+    left: var(--article-toc-rail-left, 0px);
+    z-index: 2;
+    /* --article-toc-rail-width is set by article-toc.js: the settings width,
+       narrowed if the gutter can't take it in full. */
+    width: var(--article-toc-rail-width, var(--article-toc-width, 320px));
+    max-height: calc(100vh - var(--article-toc-anchor) - var(--article-toc-top, 32px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    opacity: 1;
+    transition: opacity var(--animation-speed, 200ms) var(--animation-easing, ease);
+    scrollbar-width: thin;
+  }
+
+  /* Clear a pinned header. --header-height is kept current by assets/header.js. */
+  body:has(#header-component[sticky]) .article-toc[data-mode='rail'] {
+    --article-toc-anchor: calc(var(--header-height, 0px) + var(--article-toc-top, 32px));
+  }
+
+  .article-toc[data-mode='rail'][data-in-view='false'] {
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .article-toc__accordion {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--article-toc-radius, 16px);
+    background: var(--article-toc-body-bg, #efebfb);
+    box-shadow: var(--article-toc-shadow);
+  }
+
+  .article-toc__details {
+    display: block;
+  }
+
+  .article-toc__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+    background: var(--article-toc-header-bg, #3b1e5f);
+    color: var(--article-toc-header-text, #ffffff);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .article-toc__summary::-webkit-details-marker,
+  .article-toc__summary::marker {
+    display: none;
+    content: '';
+  }
+
+  .article-toc__summary:focus-visible {
+    outline: 2px solid var(--article-toc-header-text, #ffffff);
+    outline-offset: -4px;
+  }
+
+  .article-toc__title {
+    font-size: var(--article-toc-heading-size, 20px);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .article-toc__chevron {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    transition: transform var(--animation-speed, 200ms) var(--animation-easing, ease);
+  }
+
+  .article-toc__chevron svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .article-toc__details[open] .article-toc__chevron {
+    transform: rotate(180deg);
+  }
+
+  .article-toc__content {
+    padding-inline: 20px;
+  }
+
+  .article-toc__details[open] .article-toc__content {
+    padding-block: 4px 8px;
+  }
+
+  .article-toc__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .article-toc__item + .article-toc__item {
+    border-top: 1px solid var(--article-toc-divider, #d9d0f0);
+  }
+
+  .article-toc__link {
+    display: flex;
+    gap: 14px;
+    padding-block: 16px;
+    color: var(--article-toc-text, #2e1a47);
+    font-size: var(--article-toc-font-size, 16px);
+    line-height: 1.35;
+    text-decoration: none;
+    transition: color var(--animation-speed, 200ms) var(--animation-easing, ease);
+  }
+
+  .article-toc__number {
+    flex: 0 0 auto;
+    color: var(--article-toc-number, #8b7bb8);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .article-toc__link:hover,
+  .article-toc__link--active {
+    color: var(--article-toc-active, #5b3fa8);
+  }
+
+  .article-toc__link--active .article-toc__label {
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-toc__chevron,
+    .article-toc[data-mode='rail'] {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Article TOC panel",
+  "tag": "aside",
+  "class": "article-toc-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Builds an \"In this article\" list from the headings in the article. Shows in the page gutter when there is room for it, and above the article body otherwise."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "In this article"
+    },
+    {
+      "type": "checkbox",
+      "id": "include_h3",
+      "label": "Include H3 headings",
+      "info": "Off by default — only H2 headings are listed.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_numbers",
+      "label": "Number the entries",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "min_headings",
+      "label": "Minimum headings",
+      "info": "The panel hides itself on articles with fewer headings than this.",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Position"
+    },
+    {
+      "type": "select",
+      "id": "side",
+      "label": "Side",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "panel_width",
+      "label": "Panel width",
+      "min": 240,
+      "max": 420,
+      "step": 10,
+      "unit": "px",
+      "default": 320
+    },
+    {
+      "type": "range",
+      "id": "top_offset",
+      "label": "Distance from top",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "scroll_offset",
+      "label": "Scroll clearance",
+      "info": "Space left above a heading when jumping to it, so the sticky header doesn't cover it.",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "default": 80
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_out_of_view",
+      "label": "Hide once the article scrolls past",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Open state"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_on_desktop",
+      "label": "Expanded on desktop",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "open_on_mobile",
+      "label": "Expanded on mobile",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "header_background",
+      "label": "Header background",
+      "default": "#3B1E5F"
+    },
+    {
+      "type": "color",
+      "id": "header_text",
+      "label": "Header text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "body_background",
+      "label": "List background",
+      "default": "#EFEBFB"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Entry text",
+      "default": "#2E1A47"
+    },
+    {
+      "type": "color",
+      "id": "number_color",
+      "label": "Numbers",
+      "default": "#8B7BB8"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Divider",
+      "default": "#D9D0F0"
+    },
+    {
+      "type": "color",
+      "id": "active_color",
+      "label": "Active / hover entry",
+      "default": "#5B3FA8"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Entry size",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "text",
+      "id": "content_selector",
+      "label": "Article body selector",
+      "info": "CSS selector for the element holding the article body. Leave as is unless the article layout has been customized.",
+      "default": ".blog-post-content"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Article TOC panel"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["article"]
+  }
+}
+{% endschema %}

@@ -11,6 +11,121 @@
     max-width: var(--normal-content-width);
     margin: 0 auto;
   }
+
+  /* ---------------------------------------------------------------------------
+     Comparison tables inside article bodies.
+
+     Every selector is scoped with `.blog-post-content.rte` (two classes) so it
+     outranks the generic `.rte table` rules in base.css without !important, and
+     so product descriptions and pages keep the default table styling.
+
+     The rounded frame lives on `.rte-table-wrapper`, the scroll container that
+     assets/rte-formatter.js puts around each table — a table with
+     border-collapse can't clip its own corners.
+     --------------------------------------------------------------------------- */
+  .blog-post-content.rte {
+    --article-table-frame: #3b1e5f;
+    --article-table-head-bg: #efebfb;
+    --article-table-label-bg: #efebfb;
+    --article-table-stripe: #e9f2fb;
+    --article-table-text: #2e1a47;
+    --article-table-rule: #e2daf5;
+    --article-table-radius: 18px;
+  }
+
+  .blog-post-content.rte .rte-table-wrapper {
+    /* overflow-y must not be `visible`, or the radius won't clip the corners. */
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 2px solid var(--article-table-frame);
+    border-radius: var(--article-table-radius);
+    background: #ffffff;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .blog-post-content.rte table {
+    /* base.css pins tables to `fixed`, which splits columns evenly; `auto` lets
+       the label column stay narrow and the data columns take the room. */
+    table-layout: auto;
+    min-width: 34rem;
+    border: 0;
+    color: var(--article-table-text);
+    font-family: 'sofia-pro', sans-serif;
+    line-height: 1.4;
+  }
+
+  /* Row rules are drawn per cell below, so drop the theme's row borders. */
+  .blog-post-content.rte table tr {
+    border: 0;
+  }
+
+  /* Logical properties, to match (and outrank) the padding longhands base.css
+     and component-rte.css set on these cells. */
+  .blog-post-content.rte table :is(th, td) {
+    padding-block: 1rem;
+    padding-inline: 1.25rem;
+    border: 0;
+    text-align: start;
+    vertical-align: middle;
+  }
+
+  /* Header row — a real <thead>, or a first row that has no <td> in it, which is
+     what the rich-text editor produces when a header row isn't marked up. */
+  .blog-post-content.rte table :is(thead, tr:not(:has(td))) :is(th, td) {
+    background: var(--article-table-head-bg);
+    border-bottom: 2px solid var(--article-table-frame);
+    font-size: 0.875em;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* Label column: bold, tinted, and pinned open while the table scrolls
+     sideways on narrow screens. The divider is an inset shadow rather than a
+     border because borders on sticky cells drop out under border-collapse. */
+  .blog-post-content.rte table tr > :first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--article-table-label-bg);
+    box-shadow: inset -2px 0 0 var(--article-table-frame);
+    font-weight: 700;
+    text-align: start;
+  }
+
+  /* Zebra striping on the data columns, counted so the first data row is always
+     unstriped whichever way the header is marked up.
+
+     Note: `:has()` can't be nested inside `:has()` — it makes the selector
+     invalid, which silently drops the whole rule, striping included. Both
+     branches below detect the header row without nesting.  */
+
+  /* Header row sits in the same <tbody> (no <thead>): skip it, then alternate. */
+  .blog-post-content.rte table tr:not(:has(td)) ~ tr:nth-child(odd) > :not(:first-child),
+  /* Header in <thead>, or no header at all: alternate from the top of the body.
+     Rows already covered by the branch above are excluded. */
+  .blog-post-content.rte table tbody tr:nth-child(even):not(tr:not(:has(td)) ~ *) > :not(:first-child) {
+    background: var(--article-table-stripe);
+  }
+
+  /* Hairlines between adjacent data rows only — a row right below a header row
+     must not stack a hairline against the header's 2px rule. */
+  .blog-post-content.rte table tr:has(td) + tr:has(td) > :is(th, td) {
+    border-top: 1px solid var(--article-table-rule);
+  }
+
+  @media screen and (max-width: 749px) {
+    .blog-post-content.rte {
+      --article-table-radius: 14px;
+    }
+
+    .blog-post-content.rte table :is(th, td) {
+      padding-block: 0.75rem;
+      padding-inline: 0.875rem;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}

@@ -1,0 +1,653 @@
+{%- comment -%}
+  Blog Hero
+
+  Editorial hero for blog articles: category pill, published date, headline,
+  author byline with avatar, and a partnership line beside a rounded feature
+  image. Desktop is a two-column split with the image on the right; mobile
+  stacks with the image on top (see the two reference designs).
+
+  Every field falls back to the current article — title, published date, author,
+  featured image — so the section works on an article template with no setup,
+  while each one can still be overridden. With no article in context (a page, or
+  the section picker preview) it falls back to the settings and a placeholder,
+  which keeps it usable as a standalone section anywhere.
+
+  Note: the article template also renders its own title, date and featured image
+  from main-blog-post. Turn those off with that section's "Hide built-in title,
+  details and featured image" setting when this hero is on the page.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+
+  assign heading_text = s.heading | default: article.title
+  assign author_name = s.author_name | default: article.author
+  assign hero_image = s.image | default: article.image
+
+  assign badge_text = s.badge_text
+  if badge_text == blank and article.tags.size > 0
+    assign badge_text = article.tags.first
+  endif
+
+  # The date only renders when a real article backs it; a manual date setting
+  # would just be one more thing to keep in sync.
+  assign show_date = false
+  if s.show_date and article.published_at != blank
+    assign show_date = true
+  endif
+
+  assign show_author = false
+  if s.show_author and author_name != blank
+    assign show_author = true
+  endif
+
+  assign has_meta = false
+  if badge_text != blank or show_date
+    assign has_meta = true
+  endif
+
+  assign fetch_priority = 'auto'
+  if section.index == 1
+    assign fetch_priority = 'high'
+  endif
+
+  assign image_widths = '400, 600, 800, 1000, 1200, 1600'
+-%}
+
+<div
+  class="blog-hero blog-hero--image-{{ s.image_position }}"
+  style="
+    --bh-bg: {{ s.background_color }};
+    --bh-text: {{ s.text_color }};
+    --bh-heading: {{ s.heading_color }};
+    --bh-badge-bg: {{ s.badge_background }};
+    --bh-badge-text: {{ s.badge_text_color }};
+    --bh-max-width: {{ s.max_width }}px;
+    --bh-gap: {{ s.column_gap }}px;
+    --bh-text-width: {{ s.text_max_width }}px;
+    --bh-heading-size: {{ s.heading_size }}px;
+    --bh-heading-size-mobile: {{ s.heading_size_mobile }}px;
+    --bh-avatar: {{ s.avatar_size }}px;
+    --bh-avatar-mobile: {{ s.avatar_size_mobile }}px;
+    --bh-radius: {{ s.image_radius }}px;
+    --bh-ratio: {{ s.image_ratio }};
+    --bh-pad-top: {{ s.padding_top }}px;
+    --bh-pad-bottom: {{ s.padding_bottom }}px;
+    --bh-pad-top-mobile: {{ s.padding_top_mobile }}px;
+    --bh-pad-bottom-mobile: {{ s.padding_bottom_mobile }}px;
+  "
+  {{ section.shopify_attributes }}
+>
+  <div class="blog-hero__inner">
+    <div class="blog-hero__content">
+      {%- if has_meta -%}
+        <div class="blog-hero__meta">
+          {%- if badge_text != blank -%}
+            <span class="blog-hero__badge">{{ badge_text | escape }}</span>
+          {%- endif -%}
+
+          {%- if show_date -%}
+            <span class="blog-hero__date">
+              {%- if s.date_prefix != blank -%}{{ s.date_prefix | escape }} {% endif -%}
+              <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+                {{- article.published_at | date: s.date_format -}}
+              </time>
+            </span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if heading_text != blank -%}
+        <{{ s.heading_tag }} class="blog-hero__heading">{{ heading_text | escape }}</{{ s.heading_tag }}>
+      {%- endif -%}
+
+      {%- if show_author -%}
+        <div class="blog-hero__author">
+          {%- if s.byline_label != blank -%}
+            <span class="blog-hero__byline">{{ s.byline_label | escape }}</span>
+          {%- endif -%}
+
+          {%- if s.author_image != blank -%}
+            {{
+              s.author_image
+              | image_url: width: 200
+              | image_tag:
+                widths: '64, 96, 128, 200',
+                sizes: '(max-width: 749px) 64px, 44px',
+                class: 'blog-hero__avatar',
+                loading: 'eager',
+                alt: author_name
+            }}
+          {%- endif -%}
+
+          <span class="blog-hero__author-name">{{ author_name | escape }}</span>
+        </div>
+      {%- endif -%}
+
+      {%- if s.partnership_text != blank -%}
+        <p class="blog-hero__partnership">{{ s.partnership_text | escape }}</p>
+      {%- endif -%}
+    </div>
+
+    <figure class="blog-hero__media">
+      {%- if hero_image != blank -%}
+        {{
+          hero_image
+          | image_url: width: 1600
+          | image_tag:
+            widths: image_widths,
+            sizes: '(max-width: 749px) calc(100vw - 48px), (max-width: 1200px) 45vw, 600px',
+            class: 'blog-hero__image',
+            fetchpriority: fetch_priority,
+            alt: hero_image.alt | default: heading_text
+        }}
+      {%- else -%}
+        {{ 'image' | placeholder_svg_tag: 'blog-hero__image blog-hero__image--placeholder' }}
+      {%- endif -%}
+    </figure>
+  </div>
+</div>
+
+{% stylesheet %}
+  .blog-hero {
+    background: var(--bh-bg, #efedfd);
+    color: var(--bh-text, #3b1e6b);
+    padding-block: var(--bh-pad-top-mobile, 32px) var(--bh-pad-bottom-mobile, 32px);
+    font-family: 'sofia-pro', sans-serif;
+  }
+
+  .blog-hero__inner {
+    display: grid;
+    /* Mobile: single column. The image is moved above the copy further down. */
+    gap: 28px;
+    max-width: var(--bh-max-width, 1400px);
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  .blog-hero__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .blog-hero__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    /* Tight enough that the pill and date share one row on a 390px phone, as in
+       the mobile design; they still wrap cleanly on narrower screens. */
+    gap: 8px 12px;
+    margin-block-end: 24px;
+  }
+
+  .blog-hero__badge {
+    padding-block: 0.5em;
+    padding-inline: 1.1em;
+    border-radius: 999px;
+    background: var(--bh-badge-bg, #486ced);
+    color: var(--bh-badge-text, #ffffff);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .blog-hero__date {
+    font-size: 0.9375rem;
+  }
+
+  .blog-hero__heading {
+    margin: 0;
+    color: var(--bh-heading, #3b1e6b);
+    font-size: var(--bh-heading-size-mobile, 30px);
+    font-weight: 700;
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+
+  .blog-hero__author {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-block-start: 28px;
+  }
+
+  .blog-hero__avatar {
+    flex: 0 0 auto;
+    /* Mobile puts the avatar first, ahead of the byline label. */
+    order: -1;
+    width: var(--bh-avatar-mobile, 64px);
+    height: var(--bh-avatar-mobile, 64px);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .blog-hero__byline,
+  .blog-hero__author-name {
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .blog-hero__author-name {
+    font-weight: 500;
+  }
+
+  .blog-hero__partnership {
+    margin: 24px 0 0;
+    font-size: 1.0625rem;
+  }
+
+  .blog-hero__media {
+    margin: 0;
+    /* Sits above the copy on mobile, matching the stacked design. */
+    order: -1;
+  }
+
+  .blog-hero__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: var(--bh-ratio, 1);
+    border-radius: var(--bh-radius, 20px);
+    object-fit: cover;
+  }
+
+  .blog-hero__image--placeholder {
+    background: rgb(0 0 0 / 4%);
+    fill: rgb(0 0 0 / 12%);
+  }
+
+  @media screen and (min-width: 750px) {
+    .blog-hero {
+      padding-block: var(--bh-pad-top, 72px) var(--bh-pad-bottom, 72px);
+    }
+
+    .blog-hero__inner {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: var(--bh-gap, 64px);
+      padding-inline: 40px;
+    }
+
+    /* Image on the right is the default; this flips the visual order only, so
+       the copy stays first in the DOM for screen readers either way. */
+    .blog-hero--image-left .blog-hero__media {
+      order: -1;
+    }
+
+    .blog-hero--image-right .blog-hero__media {
+      order: 0;
+    }
+
+    /* The design sets a narrower measure than the column itself, which is what
+       wraps the headline after "One Children's". */
+    .blog-hero__content {
+      max-width: var(--bh-text-width, 520px);
+    }
+
+    .blog-hero__heading {
+      font-size: var(--bh-heading-size, 48px);
+    }
+
+    .blog-hero__meta {
+      gap: 8px 20px;
+      margin-block-end: 28px;
+    }
+
+    .blog-hero__badge {
+      font-size: 0.8125rem;
+    }
+
+    .blog-hero__date {
+      font-size: 1.0625rem;
+    }
+
+    .blog-hero__author {
+      margin-block-start: 56px;
+    }
+
+    .blog-hero__partnership {
+      margin-block-start: 40px;
+    }
+
+    .blog-hero__avatar {
+      order: 0;
+      width: var(--bh-avatar, 44px);
+      height: var(--bh-avatar, 44px);
+    }
+
+    /* Desktop shows the label in sentence case ahead of the avatar. */
+    .blog-hero__byline {
+      font-size: 0.9375rem;
+      letter-spacing: normal;
+      text-transform: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Blog hero",
+  "tag": "section",
+  "class": "section-blog-hero",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Falls back to the current article's title, date, author and featured image. Fill a field in to override it."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Category pill",
+      "info": "Leave blank to use the article's first tag. Blank with no tags hides the pill."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Headline",
+      "info": "Leave blank to use the article title."
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Headline tag",
+      "info": "Use H1 only if the built-in article title is hidden, so the page has a single H1.",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "p",
+          "label": "Paragraph"
+        }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "text",
+      "id": "partnership_text",
+      "label": "Partnership line",
+      "default": "In Partnership with First Day"
+    },
+    {
+      "type": "header",
+      "content": "Date"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show published date",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "date_prefix",
+      "label": "Date prefix",
+      "default": "Published"
+    },
+    {
+      "type": "text",
+      "id": "date_format",
+      "label": "Date format",
+      "info": "Liquid date format. %b %-d, %Y gives \"Jul 27, 2026\".",
+      "default": "%b %-d, %Y"
+    },
+    {
+      "type": "header",
+      "content": "Author"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show byline",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "byline_label",
+      "label": "Byline label",
+      "default": "written by"
+    },
+    {
+      "type": "text",
+      "id": "author_name",
+      "label": "Author name",
+      "info": "Leave blank to use the article author."
+    },
+    {
+      "type": "image_picker",
+      "id": "author_image",
+      "label": "Author photo",
+      "info": "Hidden when empty."
+    },
+    {
+      "type": "range",
+      "id": "avatar_size",
+      "label": "Photo size — desktop",
+      "min": 28,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "avatar_size_mobile",
+      "label": "Photo size — mobile",
+      "min": 28,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Leave empty to use the article's featured image."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position on desktop",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image shape",
+      "options": [
+        {
+          "value": "1",
+          "label": "Square"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "3 / 4",
+          "label": "Portrait (3:4)"
+        },
+        {
+          "value": "16 / 9",
+          "label": "Wide (16:9)"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "image_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#EFEDFD"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Headline",
+      "default": "#3B1E6B"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Body text",
+      "default": "#3B1E6B"
+    },
+    {
+      "type": "color",
+      "id": "badge_background",
+      "label": "Pill background",
+      "default": "#486CED"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Pill text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Headline size — desktop",
+      "min": 28,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Headline size — mobile",
+      "min": 20,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "text_max_width",
+      "label": "Text measure — desktop",
+      "info": "Caps how wide the copy runs inside its column, controlling where the headline wraps.",
+      "min": 320,
+      "max": 900,
+      "step": 10,
+      "unit": "px",
+      "default": 520
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Content width",
+      "min": 900,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1400
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Gap between columns",
+      "min": 16,
+      "max": 140,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding — desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding — desktop",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Top padding — mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Bottom padding — mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog hero"
+    }
+  ]
+}
+{% endschema %}

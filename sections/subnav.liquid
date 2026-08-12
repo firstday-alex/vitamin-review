@@ -1,0 +1,453 @@
+{%- comment -%}
+  Subnav
+
+  A flat secondary navigation bar for the header group — a row of links from a
+  Shopify menu, sitting under (or over) the main header depending on where it's
+  ordered in the group.
+
+  Add it in the theme editor: Header group → Add section → Subnav, then pick a
+  menu and drag it above or below the main header row.
+
+  Only the menu's top-level links are rendered; this is a flat bar, so any
+  child links in the chosen menu are ignored by design. The link matching the
+  current page is marked with aria-current and the active style.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign menu = linklists[s.menu]
+-%}
+
+{%- if menu.links.size > 0 -%}
+  <div
+    class="
+      subnav
+      subnav--{{ s.link_style }}
+      subnav--mobile-{{ s.mobile_behavior }}
+      subnav--align-{{ s.alignment }}
+      subnav--width-{{ s.section_width }}
+    "
+    style="
+      --sn-bg: {{ s.background_color }};
+      --sn-link: {{ s.link_color }};
+      --sn-link-active: {{ s.active_color }};
+      --sn-accent: {{ s.accent_color }};
+      --sn-border: {{ s.border_color }};
+      --sn-border-width: {{ s.border_width }}px;
+      --sn-gap: {{ s.link_gap }}px;
+      --sn-font-size: {{ s.font_size }}px;
+      --sn-letter-spacing: {{ s.letter_spacing | divided_by: 100.0 }}em;
+      --sn-case: {{ s.text_case }};
+      --sn-weight: {{ s.font_weight }};
+      --sn-pad-block: {{ s.padding_block }}px;
+      --sn-max-width: {{ s.max_width }}px;
+    "
+    {{ section.shopify_attributes }}
+  >
+    <nav class="subnav__inner" aria-label="{{ s.aria_label | escape }}">
+      {%- if s.heading != blank -%}
+        <span class="subnav__heading">{{ s.heading | escape }}</span>
+      {%- endif -%}
+
+      <ul class="subnav__list">
+        {%- for link in menu.links -%}
+          {%- liquid
+            assign is_current = false
+            if link.current or link.child_active
+              assign is_current = true
+            endif
+          -%}
+          <li class="subnav__item">
+            <a
+              class="subnav__link{% if is_current %} subnav__link--active{% endif %}"
+              href="{{ link.url }}"
+              {% if is_current %}
+                aria-current="page"
+              {% endif %}
+            >
+              {{- link.title | escape -}}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .subnav {
+    background: var(--sn-bg, #ffffff);
+    border-block-end: var(--sn-border-width, 1px) solid var(--sn-border, #e2daf5);
+    font-family: 'sofia-pro', sans-serif;
+  }
+
+  .subnav__inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: var(--sn-max-width, 1400px);
+    margin-inline: auto;
+    padding-inline: 24px;
+    min-width: 0;
+  }
+
+  .subnav--width-full .subnav__inner {
+    max-width: none;
+  }
+
+  .subnav__heading {
+    flex: 0 0 auto;
+    color: var(--sn-link, #3b1e6b);
+    font-size: var(--sn-font-size, 14px);
+    font-weight: 700;
+    letter-spacing: var(--sn-letter-spacing, 0.04em);
+    text-transform: var(--sn-case, none);
+    white-space: nowrap;
+  }
+
+  .subnav__list {
+    display: flex;
+    gap: var(--sn-gap, 28px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+    /* Alignment via auto margins rather than justify-content: a centred flex
+       container clips its own overflow start, which would hide the first links
+       once the row is wider than the screen. */
+    margin-inline: var(--sn-align-start, 0) var(--sn-align-end, auto);
+  }
+
+  .subnav--mobile-scroll .subnav__list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .subnav--mobile-wrap .subnav__list {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .subnav__item {
+    margin: 0;
+    list-style: none;
+  }
+
+  .subnav__link {
+    display: inline-block;
+    padding-block: var(--sn-pad-block, 12px);
+    color: var(--sn-link, #3b1e6b);
+    font-size: var(--sn-font-size, 14px);
+    font-weight: var(--sn-weight, 500);
+    letter-spacing: var(--sn-letter-spacing, 0.04em);
+    line-height: 1.3;
+    text-decoration: none;
+    text-transform: var(--sn-case, none);
+    white-space: nowrap;
+    transition: color var(--animation-speed, 200ms) var(--animation-easing, ease),
+      background-color var(--animation-speed, 200ms) var(--animation-easing, ease),
+      border-color var(--animation-speed, 200ms) var(--animation-easing, ease);
+  }
+
+  .subnav__link:hover,
+  .subnav__link--active {
+    color: var(--sn-link-active, #486ced);
+  }
+
+  /* Underline style: a transparent border reserves the space, so nothing shifts
+     when a link becomes active or hovered. */
+  .subnav--underline .subnav__link {
+    border-block-end: 2px solid transparent;
+  }
+
+  .subnav--underline .subnav__link:hover,
+  .subnav--underline .subnav__link--active {
+    border-block-end-color: var(--sn-accent, #486ced);
+  }
+
+  .subnav--pill .subnav__link {
+    padding-inline: 14px;
+    border-radius: 999px;
+  }
+
+  .subnav--pill .subnav__link:hover,
+  .subnav--pill .subnav__link--active {
+    background: var(--sn-accent, #486ced);
+    color: var(--sn-bg, #ffffff);
+  }
+
+  .subnav__link:focus-visible {
+    outline: 2px solid var(--sn-accent, #486ced);
+    outline-offset: 2px;
+  }
+
+  /* Alignment drives the auto margins declared above. */
+  .subnav--align-center .subnav__list {
+    --sn-align-start: auto;
+    --sn-align-end: auto;
+  }
+
+  .subnav--align-end .subnav__list {
+    --sn-align-start: auto;
+    --sn-align-end: 0;
+  }
+
+  @media screen and (max-width: 749px) {
+    .subnav__inner {
+      gap: 12px;
+    }
+
+    /* A centred row that scrolls would start mid-way through the links. */
+    .subnav--mobile-scroll .subnav__list {
+      --sn-align-start: 0;
+      --sn-align-end: auto;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Subnav",
+  "tag": "div",
+  "class": "section-subnav",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "A flat row of links from a menu. Only top-level links are shown — child links are ignored."
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "info": "The section is hidden when the menu is empty.",
+      "default": "main-menu"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Label before the links",
+      "info": "Optional, e.g. \"Browse\". Leave blank to hide."
+    },
+    {
+      "type": "text",
+      "id": "aria_label",
+      "label": "Accessible name",
+      "info": "Describes this nav to screen readers, distinguishing it from the main menu.",
+      "default": "Secondary"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "Page"
+        },
+        {
+          "value": "full-width",
+          "label": "Full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Content width",
+      "info": "Ignored when section width is Full.",
+      "min": 900,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1400
+    },
+    {
+      "type": "select",
+      "id": "mobile_behavior",
+      "label": "When links don't fit on mobile",
+      "options": [
+        {
+          "value": "scroll",
+          "label": "Scroll sideways"
+        },
+        {
+          "value": "wrap",
+          "label": "Wrap onto more rows"
+        }
+      ],
+      "default": "scroll"
+    },
+    {
+      "type": "range",
+      "id": "link_gap",
+      "label": "Space between links",
+      "min": 8,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_block",
+      "label": "Row height padding",
+      "min": 4,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "select",
+      "id": "link_style",
+      "label": "Active link style",
+      "options": [
+        {
+          "value": "underline",
+          "label": "Underline"
+        },
+        {
+          "value": "pill",
+          "label": "Pill"
+        },
+        {
+          "value": "plain",
+          "label": "Colour only"
+        }
+      ],
+      "default": "underline"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Text size",
+      "min": 11,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "font_weight",
+      "label": "Text weight",
+      "min": 300,
+      "max": 900,
+      "step": 100,
+      "default": 500
+    },
+    {
+      "type": "select",
+      "id": "text_case",
+      "label": "Text case",
+      "options": [
+        {
+          "value": "none",
+          "label": "As typed"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing (em x 100)",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Bottom border",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link",
+      "default": "#3B1E6B"
+    },
+    {
+      "type": "color",
+      "id": "active_color",
+      "label": "Link — active and hover",
+      "default": "#486CED"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Underline / pill",
+      "default": "#486CED"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Bottom border",
+      "default": "#E2DAF5"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Subnav"
+    }
+  ]
+}
+{% endschema %}

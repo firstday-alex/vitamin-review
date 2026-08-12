@@ -9,6 +9,37 @@
  */
 {
   "sections": {
+    "blog_hero": {
+      "type": "blog-hero",
+      "settings": {
+        "heading_tag": "h1",
+        "partnership_text": "In Partnership with First Day",
+        "show_date": true,
+        "date_prefix": "Published",
+        "date_format": "%b %-d, %Y",
+        "show_author": true,
+        "byline_label": "written by",
+        "avatar_size": 44,
+        "avatar_size_mobile": 64,
+        "image_position": "right",
+        "image_ratio": "1",
+        "image_radius": 20,
+        "background_color": "#EFEDFD",
+        "heading_color": "#3B1E6B",
+        "text_color": "#3B1E6B",
+        "badge_background": "#486CED",
+        "badge_text_color": "#FFFFFF",
+        "heading_size": 48,
+        "heading_size_mobile": 30,
+        "max_width": 1400,
+        "column_gap": 64,
+        "text_max_width": 520,
+        "padding_top": 72,
+        "padding_bottom": 72,
+        "padding_top_mobile": 32,
+        "padding_bottom_mobile": 32
+      }
+    },
     "section": {
       "type": "main-blog-post",
       "blocks": {
@@ -83,15 +114,45 @@
         }
       },
       "settings": {
+        "hide_article_header": true,
         "content_direction": "column",
         "gap": 32,
         "color_scheme": "",
         "padding-block-start": 40,
         "padding-block-end": 80
       }
+    },
+    "article_toc": {
+      "type": "article-toc-panel",
+      "settings": {
+        "heading": "In this article",
+        "include_h3": false,
+        "show_numbers": true,
+        "min_headings": 2,
+        "side": "left",
+        "panel_width": 320,
+        "top_offset": 32,
+        "scroll_offset": 80,
+        "hide_out_of_view": true,
+        "open_on_desktop": true,
+        "open_on_mobile": false,
+        "header_background": "#3B1E5F",
+        "header_text": "#FFFFFF",
+        "body_background": "#EFEBFB",
+        "text_color": "#2E1A47",
+        "number_color": "#8B7BB8",
+        "divider_color": "#D9D0F0",
+        "active_color": "#5B3FA8",
+        "heading_size": 20,
+        "font_size": 16,
+        "corner_radius": 16,
+        "content_selector": ".blog-post-content"
+      }
     }
   },
   "order": [
-    "section"
+    "blog_hero",
+    "section",
+    "article_toc"
   ]
 }
