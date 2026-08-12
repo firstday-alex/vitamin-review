@@ -137,11 +137,11 @@
         "text_case": "none",
         "letter_spacing": 4,
         "border_width": 1,
-        "background_color": "#F2F2F2",
+        "background_color": "#FFFFFF",
         "link_color": "#000000",
-        "active_color": "#486CED",
-        "accent_color": "#486CED",
-        "border_color": "#E2DAF5"
+        "active_color": "#486ced",
+        "accent_color": "#486ced",
+        "border_color": "#e2daf5"
       }
     }
   },
