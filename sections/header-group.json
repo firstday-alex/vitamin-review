@@ -117,10 +117,37 @@
         "enable_transparent_header_collection": false,
         "collection_color_scheme": "default"
       }
+    },
+    "subnav_99XLHP": {
+      "type": "subnav",
+      "name": "Subnav",
+      "settings": {
+        "menu": "subnav",
+        "heading": "",
+        "aria_label": "Secondary",
+        "alignment": "center",
+        "section_width": "page-width",
+        "max_width": 1400,
+        "mobile_behavior": "scroll",
+        "link_gap": 28,
+        "padding_block": 12,
+        "link_style": "underline",
+        "font_size": 14,
+        "font_weight": 500,
+        "text_case": "none",
+        "letter_spacing": 4,
+        "border_width": 1,
+        "background_color": "#FFFFFF",
+        "link_color": "#000000",
+        "active_color": "#486ced",
+        "accent_color": "#486ced",
+        "border_color": "#e2daf5"
+      }
     }
   },
   "order": [
     "header_announcements_9jGBFp",
-    "header_section"
+    "header_section",
+    "subnav_99XLHP"
   ]
 }
