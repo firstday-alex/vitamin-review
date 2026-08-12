@@ -22,6 +22,9 @@
  *   data-numbered          `true` to prefix 01, 02, …
  *   data-scroll-offset     px of sticky-header clearance when jumping to a heading
  *   data-hide-out-of-view  `true` to fade the rail out once the article scrolls past
+ *
+ * The rail is hidden until the body copy reaches it, so it never sits over
+ * whatever is above the article (the blog hero, the title, the featured image).
  */
 
 /** Minimum breathing room between the rail and the content column / viewport edge. */
@@ -44,11 +47,11 @@ class ArticleToc extends HTMLElement {
   /** True while this element is being moved, so disconnectedCallback can ignore the churn. */
   #moving = false;
 
+  /** Guards the one retry for a body that hasn't been parsed yet. */
+  #retried = false;
+
   /** @type {{ heading: HTMLElement, link: HTMLAnchorElement }[]} */
   #entries = [];
-
-  /** @type {IntersectionObserver | null} */
-  #inViewObserver = null;
 
   /** @type {ResizeObserver | null} */
   #resizeObserver = null;
@@ -66,8 +69,11 @@ class ArticleToc extends HTMLElement {
 
     if (!this.#content) {
       this.dataset.mode = 'off';
+      this.#retryWhenReady();
       return;
     }
+
+    this.#retried = false;
 
     if (!this.#anchor) {
       this.#anchor = document.createComment('article-toc');
@@ -86,6 +92,7 @@ class ArticleToc extends HTMLElement {
     // them are unavailable.
     this.#measure();
     this.#observe();
+    this.#updateVisibility();
     this.#updateActive();
   }
 
@@ -102,6 +109,27 @@ class ArticleToc extends HTMLElement {
       requestAnimationFrame(() => {
         if (!this.isConnected && anchor.isConnected) anchor.after(this);
       });
+    }
+  }
+
+  /**
+   * The body copy may not be in the document yet if this element gets upgraded
+   * early — the Section Rendering API and theme-editor re-renders can both do
+   * that. Without this, one unlucky ordering would switch the panel off for the
+   * rest of the page's life.
+   */
+  #retryWhenReady() {
+    if (this.#retried) return;
+    this.#retried = true;
+
+    const retry = () => {
+      if (this.isConnected && !this.#content) this.connectedCallback();
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', retry, { once: true, signal: this.#controller.signal });
+    } else {
+      requestAnimationFrame(retry);
     }
   }
 
@@ -232,24 +260,11 @@ class ArticleToc extends HTMLElement {
       this.#resizeObserver.observe(content);
     }
 
-    if (this.dataset.hideOutOfView === 'true' && 'IntersectionObserver' in window) {
-      this.#inViewObserver = new IntersectionObserver(
-        ([entry]) => {
-          this.dataset.inView = entry?.isIntersecting ? 'true' : 'false';
-        },
-        { rootMargin: `-${this.#scrollOffset}px 0px -40% 0px` }
-      );
-      this.#inViewObserver.observe(content);
-    } else {
-      this.dataset.inView = 'true';
-    }
   }
 
   #teardown() {
     this.#controller.abort();
     this.#controller = new AbortController();
-    this.#inViewObserver?.disconnect();
-    this.#inViewObserver = null;
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = null;
     if (this.#scrollFrame != null) cancelAnimationFrame(this.#scrollFrame);
@@ -282,15 +297,49 @@ class ArticleToc extends HTMLElement {
       this.style.removeProperty('--article-toc-rail-left');
       this.dataset.mode = 'inline';
     }
+
+    this.#updateVisibility();
   };
 
   #onScroll = () => {
     if (this.#scrollFrame != null) return;
     this.#scrollFrame = requestAnimationFrame(() => {
       this.#scrollFrame = null;
+      this.#updateVisibility();
       this.#updateActive();
     });
   };
+
+  /**
+   * Shows the rail only while the body copy is actually alongside it.
+   *
+   * The panel is fixed to the viewport, so anything above the article — the blog
+   * hero, most of all — shares that space. Keying off "is the article on screen
+   * at all" pops the panel over the hero, because a tall article starts
+   * intersecting long before its first line reaches the top of the screen.
+   * Instead the panel waits until the copy has actually reached the panel's own
+   * top edge, and leaves once the copy has passed above it.
+   */
+  #updateVisibility() {
+    const content = this.#content;
+    if (!content) return;
+
+    // Inline mode sits in the page flow, where there is nothing to overlap.
+    if (this.dataset.mode !== 'rail') {
+      this.dataset.inView = 'true';
+      return;
+    }
+
+    // Read the resolved `top` so the sticky-header offset is accounted for
+    // without duplicating that calc here.
+    const anchor = parseFloat(getComputedStyle(this).top) || 0;
+    const rect = content.getBoundingClientRect();
+
+    const reachedCopy = rect.top <= anchor;
+    const pastCopy = this.dataset.hideOutOfView === 'true' && rect.bottom <= anchor;
+
+    this.dataset.inView = reachedCopy && !pastCopy ? 'true' : 'false';
+  }
 
   /**
    * Highlights the last heading the reader has scrolled past.

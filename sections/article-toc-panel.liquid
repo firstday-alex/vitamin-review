@@ -130,7 +130,10 @@
     --article-toc-anchor: calc(var(--header-height, 0px) + var(--article-toc-top, 32px));
   }
 
-  .article-toc[data-mode='rail'][data-in-view='false'] {
+  /* Hidden unless article-toc.js has confirmed the copy is alongside it. Keyed on
+     "not true" rather than "false" so the rail starts hidden and fades in, never
+     appearing over the hero for a frame while the script catches up. */
+  .article-toc[data-mode='rail']:not([data-in-view='true']) {
     pointer-events: none;
     opacity: 0;
   }
