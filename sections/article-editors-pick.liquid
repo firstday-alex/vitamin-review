@@ -32,6 +32,7 @@
 
   assign dest_namespace = s.destination_namespace | default: 'custom'
   assign dest_key = s.destination_key | default: 'destination_url'
+  assign dest_path = dest_namespace | append: '.' | append: dest_key
 -%}
 
 {%- if products.size > 0 -%}
@@ -43,6 +44,9 @@
     data-rail-order="{{ s.rail_order }}"
     data-loop="{% if s.loop %}true{% else %}false{% endif %}"
     data-controls="false"
+    {%- if s.debug_links %}
+      data-dbg-path="{{ dest_path | escape }}"
+    {%- endif %}
     style="
       --epick-card-bg: {{ s.card_background }};
       --epick-border: {{ s.border_color }};
@@ -120,18 +124,20 @@
                 # protocol-relative "//host" ones, which look like a local path but
                 # leave the site — an off-site link has to say https:// out loud.
                 assign link_url = product.url
-                assign destination = product.metafields[dest_namespace][dest_key].value | strip
+                assign dest_field = product.metafields[dest_namespace][dest_key]
 
                 # Belt and braces: if the dynamic namespace/key lookup above comes
                 # back empty while the settings still point at the default field,
                 # read it by its literal path too. Costs nothing and removes the
                 # lookup itself as a suspect when a value is set but not showing.
-                if destination == blank and dest_namespace == 'custom' and dest_key == 'destination_url'
-                  assign destination = product.metafields.custom.destination_url.value | strip
+                if dest_field == blank and dest_namespace == 'custom' and dest_key == 'destination_url'
+                  assign dest_field = product.metafields.custom.destination_url
                 endif
 
+                assign destination = dest_field.value | strip
+                assign dest_ok = false
+
                 if destination != blank
-                  assign dest_ok = false
                   assign dest_http = destination | slice: 0, 7
                   assign dest_https = destination | slice: 0, 8
 
@@ -150,8 +156,21 @@
                     assign link_url = destination
                   endif
                 endif
+
               -%}
-              <li class="epick__slide" data-epick-slide>
+              <li
+                class="epick__slide"
+                data-epick-slide
+                {%- if s.debug_links %}
+                  data-dbg-title="{{ product.title | escape }}"
+                  data-dbg-handle="{{ product.handle | escape }}"
+                  data-dbg-exists="{% if dest_field != blank %}true{% else %}false{% endif %}"
+                  data-dbg-type="{{ dest_field.type | default: '' | escape }}"
+                  data-dbg-raw="{{ destination | escape }}"
+                  data-dbg-ok="{% if dest_ok %}true{% else %}false{% endif %}"
+                  data-dbg-href="{{ link_url | escape }}"
+                {%- endif %}
+              >
                 <a class="epick__link" href="{{ link_url }}">
                   <div class="epick__media">
                     {%- if product.featured_image -%}
@@ -224,6 +243,57 @@
       <div class="epick__dots" data-epick-dots></div>
     </div>
   </editors-pick>
+
+  {%- comment -%}
+    Diagnostic only, off unless "Log link lookup to the console" is enabled.
+    Reports whether the metafield was found at all, its type, the raw value, and
+    whether the URL guard accepted it — enough to tell "no metafield" apart from
+    "metafield present but empty" and "value rejected".
+  {%- endcomment -%}
+  {%- if s.debug_links -%}
+    <script>
+      (function () {
+        // No Liquid values are interpolated into this script. Everything is read
+        // back out of HTML attributes, where escaping is unambiguous, so a URL
+        // holding a closing script tag cannot break out of this one.
+        document.querySelectorAll('editors-pick[data-dbg-path]').forEach(function (root) {
+          var label = "[Editor's Pick] " + root.getAttribute('data-dbg-path');
+
+          var rows = Array.prototype.map.call(root.querySelectorAll('[data-dbg-raw]'), function (el) {
+            return {
+              product: el.getAttribute('data-dbg-title'),
+              handle: el.getAttribute('data-dbg-handle'),
+              metafieldExists: el.getAttribute('data-dbg-exists') === 'true',
+              type: el.getAttribute('data-dbg-type'),
+              rawValue: el.getAttribute('data-dbg-raw'),
+              acceptedByGuard: el.getAttribute('data-dbg-ok') === 'true',
+              finalHref: el.getAttribute('data-dbg-href')
+            };
+          });
+
+          if (console.table) {
+            console.groupCollapsed(label + ' \u2014 link lookup for ' + rows.length + ' product(s)');
+            console.table(rows);
+            console.groupEnd();
+          } else {
+            console.log(label, rows);
+          }
+
+          rows.forEach(function (row) {
+            if (!row.metafieldExists) {
+              console.warn(label + ': NOT FOUND on "' + row.product + '" (' + row.handle + '). Check the metafield exists on this product and is visible to the storefront.');
+            } else if (!row.rawValue) {
+              console.warn(label + ': found but EMPTY on "' + row.product + '" (' + row.handle + ').');
+            } else if (!row.acceptedByGuard) {
+              console.warn(label + ': value REJECTED on "' + row.product + '" \u2014 must start with https://, http:// or / \u2014 got: ' + row.rawValue);
+            } else {
+              console.info(label + ': OK on "' + row.product + '" -> ' + row.finalHref);
+            }
+          });
+        });
+      })();
+    </script>
+  {%- endif -%}
 {%- endif -%}
 
 {% stylesheet %}
@@ -611,6 +681,13 @@
       "id": "destination_key",
       "label": "Metafield key",
       "default": "destination_url"
+    },
+    {
+      "type": "checkbox",
+      "id": "debug_links",
+      "label": "Log link lookup to the console",
+      "info": "Prints what each product's destination metafield resolved to. Turn off once you're done checking.",
+      "default": false
     },
     {
       "type": "header",

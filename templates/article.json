@@ -82,6 +82,7 @@
         "rail_order": "after",
         "destination_namespace": "custom",
         "destination_key": "destination_url",
+        "debug_links": true,
         "show_vendor": true,
         "brand_text": "First Day",
         "use_subscription_price": true,
