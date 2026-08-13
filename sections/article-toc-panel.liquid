@@ -63,6 +63,7 @@
   style="
     --article-toc-width: {{ s.panel_width }}px;
     --article-toc-top: {{ s.top_offset }}px;
+    --article-toc-inline-gap: {{ s.inline_spacing }}px;
     --article-toc-radius: {{ s.corner_radius }}px;
     --article-toc-header-bg: {{ s.header_background }};
     --article-toc-header-text: {{ s.header_text }};
@@ -103,6 +104,9 @@
     width: 100%;
     max-width: var(--normal-content-width);
     margin-inline: auto;
+    /* Adds to whatever gap the article section already applies between its
+       children, so the card isn't crowding the first heading. */
+    margin-block-end: var(--article-toc-inline-gap, 24px);
   }
 
   .article-toc[data-mode='rail'] {
@@ -166,6 +170,17 @@
   .article-toc__summary::marker {
     display: none;
     content: '';
+  }
+
+  /* base.css has `summary:hover { color: var(--color-primary-hover) }` at (0,1,1),
+     which outranks a lone class. On touch devices the hover state sticks after a
+     tap, which turned this header's text dark on mobile — hence the explicit
+     hover/focus selectors here, and currentColor keeps the chevron in step. */
+  .article-toc__summary,
+  .article-toc__summary:hover,
+  .article-toc__summary:focus,
+  .article-toc__summary:active {
+    color: var(--article-toc-header-text, #ffffff);
   }
 
   .article-toc__summary:focus-visible {
@@ -337,6 +352,17 @@
       "max": 200,
       "step": 4,
       "default": 80
+    },
+    {
+      "type": "range",
+      "id": "inline_spacing",
+      "label": "Space below the panel on mobile",
+      "info": "Applies when the panel stacks above the article instead of sitting in the gutter.",
+      "min": 0,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "default": 24
     },
     {
       "type": "checkbox",

@@ -133,6 +133,7 @@
         "panel_width": 320,
         "top_offset": 32,
         "scroll_offset": 80,
+        "inline_spacing": 24,
         "hide_out_of_view": true,
         "open_on_desktop": true,
         "open_on_mobile": false,
