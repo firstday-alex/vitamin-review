@@ -20,10 +20,11 @@
   decision rather than something derivable from the variant.
 
   Each card links to the product's destination_url metafield when one is set,
-  and to the product page otherwise. Create the definition in Shopify admin as
-  Settings > Custom data > Products, namespace and key `custom.destination_url`,
-  type URL (single line text also works). The namespace and key are settings
-  below if yours differ.
+  and to the product page otherwise. Create the definition in Shopify admin under
+  Settings > Custom data > Products, namespace and key `custom.destination_url`.
+  Link, URL and single-line-text types all work: Link stores an object and the
+  other two a plain string, and both shapes are read below. The namespace and key
+  are settings if yours differ.
 {%- endcomment -%}
 
 {%- liquid
@@ -134,7 +135,11 @@
                   assign dest_field = product.metafields.custom.destination_url
                 endif
 
-                assign destination = dest_field.value | strip
+                # Shopify's "Link" metafield type stores an object ({ url, text }),
+                # while URL and text types store a plain string. Reading .value.url
+                # first covers Link and falls through to the string for the others,
+                # so any of the three works without a type check.
+                assign destination = dest_field.value.url | default: dest_field.value | strip
                 assign dest_ok = false
 
                 if destination != blank
@@ -167,6 +172,7 @@
                   data-dbg-exists="{% if dest_field != blank %}true{% else %}false{% endif %}"
                   data-dbg-type="{{ dest_field.type | default: '' | escape }}"
                   data-dbg-raw="{{ destination | escape }}"
+                  data-dbg-linktext="{{ dest_field.value.text | default: '' | escape }}"
                   data-dbg-ok="{% if dest_ok %}true{% else %}false{% endif %}"
                   data-dbg-href="{{ link_url | escape }}"
                 {%- endif %}
@@ -266,6 +272,7 @@
               metafieldExists: el.getAttribute('data-dbg-exists') === 'true',
               type: el.getAttribute('data-dbg-type'),
               rawValue: el.getAttribute('data-dbg-raw'),
+              linkText: el.getAttribute('data-dbg-linktext'),
               acceptedByGuard: el.getAttribute('data-dbg-ok') === 'true',
               finalHref: el.getAttribute('data-dbg-href')
             };
@@ -668,7 +675,7 @@
     },
     {
       "type": "paragraph",
-      "content": "Cards link to each product's destination_url metafield when it is set, and to the product page when it isn't. Create the metafield under Settings > Custom data > Products with type URL."
+      "content": "Cards link to each product's destination_url metafield when it is set, and to the product page when it isn't. Create it under Settings > Custom data > Products \u2014 Link, URL or single line text all work."
     },
     {
       "type": "text",
