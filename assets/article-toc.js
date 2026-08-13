@@ -88,6 +88,7 @@ class ArticleToc extends HTMLElement {
     }
 
     this.#relocate();
+    this.#adoptRailItems();
     // Measure before wiring observers up, so the panel still lays out if any of
     // them are unavailable.
     this.#measure();
@@ -241,6 +242,33 @@ class ArticleToc extends HTMLElement {
 
     this.#moving = true;
     content.parentNode.insertBefore(this, content);
+    this.#moving = false;
+  }
+
+  /**
+   * Pulls other article-side modules (the editor's pick, for one) inside this
+   * element so they share the rail's positioning and show/hide behaviour, rather
+   * than each one re-deriving where the gutter is.
+   *
+   * Anything marked [data-article-rail-item] opts in; its data-rail-order
+   * decides whether it lands above or below the contents list. Items are left
+   * alone if there is no rail, so they still render as ordinary sections.
+   */
+  #adoptRailItems() {
+    const items = document.querySelectorAll('[data-article-rail-item]');
+    if (!items.length) return;
+
+    this.#moving = true;
+
+    for (const item of items) {
+      if (item === this || this.contains(item)) continue;
+      if (item.getAttribute('data-rail-order') === 'before') {
+        this.prepend(item);
+      } else {
+        this.append(item);
+      }
+    }
+
     this.#moving = false;
   }
 

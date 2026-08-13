@@ -96,8 +96,17 @@
   .article-toc {
     --article-toc-shadow: 0 10px 30px rgb(0 0 0 / 8%);
 
-    display: block;
+    /* A column, because other article-side modules get adopted in here by
+       article-toc.js and stack under the contents card. */
+    display: flex;
+    flex-direction: column;
+    gap: var(--article-toc-stack-gap, 24px);
     font-family: 'sofia-pro', sans-serif;
+  }
+
+  /* Adopted modules must not be squashed by the accordion's own sizing. */
+  .article-toc > * {
+    flex: 0 0 auto;
   }
 
   .article-toc[data-mode='inline'] {

@@ -13,6 +13,105 @@
   }
 
   /* ---------------------------------------------------------------------------
+     Article body typography.
+
+     Colours and sizes come from the "Article typography" theme settings, via
+     the custom properties declared in snippets/theme-styles-variables.liquid.
+     They can't be read here directly: Shopify does not run stylesheet blocks
+     through Liquid, so a settings lookup in this file would emit as plain text.
+
+     Selectors are scoped `.blog-post-content.rte` (two classes) so they outrank
+     the bare `h2` / `p` rules in base.css without !important, and leave every
+     other rich-text area on the theme's own type scale.
+     --------------------------------------------------------------------------- */
+  .blog-post-content.rte {
+    color: var(--article-text-color, #4b3b7a);
+    font-family: 'sofia-pro', sans-serif;
+    font-size: var(--article-body-size, 18px);
+    line-height: var(--article-body-line-height, 1.7);
+  }
+
+  .blog-post-content.rte :is(p, ul, ol, blockquote) {
+    color: var(--article-text-color, #4b3b7a);
+    font-size: var(--article-body-size, 18px);
+    line-height: var(--article-body-line-height, 1.7);
+  }
+
+  .blog-post-content.rte p {
+    margin-block: 0 1.1em;
+  }
+
+  .blog-post-content.rte :is(h2, h3, h4) {
+    color: var(--article-heading-color, #3b1e6b);
+    font-family: 'sofia-pro', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    /* Headings belong to the copy that follows, so the space above is much
+       larger than the space below. */
+    margin-block: 1.6em 0.6em;
+    text-wrap: pretty;
+  }
+
+  .blog-post-content.rte h2 {
+    font-size: var(--article-h2-size-mobile, 30px);
+    line-height: 1.15;
+  }
+
+  .blog-post-content.rte h3 {
+    font-size: var(--article-h3-size, 24px);
+    line-height: 1.25;
+  }
+
+  /* Nothing should push the very first element away from the section above. */
+  .blog-post-content.rte > rte-formatter > :first-child,
+  .blog-post-content.rte > :first-child {
+    margin-block-start: 0;
+  }
+
+  .blog-post-content.rte :is(strong, b) {
+    color: var(--article-strong-color, #3b1e6b);
+    font-weight: 700;
+  }
+
+  .blog-post-content.rte a:not(.button) {
+    color: var(--article-link-color, #486ced);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+
+  .blog-post-content.rte a:not(.button):hover {
+    color: var(--article-link-hover-color, #2f49b8);
+  }
+
+  .blog-post-content.rte li {
+    margin-block-end: 0.5em;
+  }
+
+  /* Images run the full width of the copy and get their own breathing room, as
+     in the design. Height is left to the intrinsic ratio. */
+  .blog-post-content.rte img {
+    display: block;
+    /* max-width, not width: a narrow image should stay its own size and centre,
+       rather than being upscaled to the column and going soft. */
+    max-width: 100%;
+    height: auto;
+    margin-block: 1.8em;
+    margin-inline: auto;
+  }
+
+  /* Table cells size their own images. */
+  .blog-post-content.rte :is(td, th) img {
+    margin-block: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    .blog-post-content.rte h2 {
+      font-size: var(--article-h2-size, 36px);
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
      Comparison tables inside article bodies.
 
      Every selector is scoped with `.blog-post-content.rte` (two classes) so it

@@ -1358,6 +1358,104 @@
     ]
   },
   {
+    "name": "Article typography",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Colours and sizes for the body of blog articles. These apply to every article."
+      },
+      {
+        "type": "header",
+        "content": "Colors"
+      },
+      {
+        "type": "color",
+        "id": "article_heading_color",
+        "label": "Headings",
+        "default": "#3B1E6B"
+      },
+      {
+        "type": "color",
+        "id": "article_text_color",
+        "label": "Body text",
+        "default": "#4B3B7A"
+      },
+      {
+        "type": "color",
+        "id": "article_link_color",
+        "label": "Links",
+        "default": "#486CED"
+      },
+      {
+        "type": "color",
+        "id": "article_link_hover_color",
+        "label": "Links — hover",
+        "default": "#2F49B8"
+      },
+      {
+        "type": "color",
+        "id": "article_strong_color",
+        "label": "Bold text",
+        "info": "Used for bold words inside paragraphs. Set it to the body colour to turn the effect off.",
+        "default": "#3B1E6B"
+      },
+      {
+        "type": "header",
+        "content": "Size"
+      },
+      {
+        "type": "range",
+        "id": "article_body_size",
+        "label": "Body text size",
+        "min": 15,
+        "max": 22,
+        "step": 1,
+        "unit": "px",
+        "default": 18
+      },
+      {
+        "type": "range",
+        "id": "article_body_line_height",
+        "label": "Body line height (x100)",
+        "info": "170 means 1.7x the text size.",
+        "min": 130,
+        "max": 210,
+        "step": 5,
+        "default": 170
+      },
+      {
+        "type": "range",
+        "id": "article_h2_size",
+        "label": "H2 size — desktop",
+        "min": 22,
+        "max": 52,
+        "step": 1,
+        "unit": "px",
+        "default": 36
+      },
+      {
+        "type": "range",
+        "id": "article_h2_size_mobile",
+        "label": "H2 size — mobile",
+        "min": 20,
+        "max": 40,
+        "step": 1,
+        "unit": "px",
+        "default": 30
+      },
+      {
+        "type": "range",
+        "id": "article_h3_size",
+        "label": "H3 size",
+        "min": 18,
+        "max": 36,
+        "step": 1,
+        "unit": "px",
+        "default": 24
+      }
+    ]
+  },
+  {
     "name": "t:names.page_layout",
     "settings": [
       {

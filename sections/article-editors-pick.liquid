@@ -1,0 +1,650 @@
+{%- comment -%}
+  Article Editor's Pick
+
+  A product highlight carousel for the article rail. It marks itself with
+  data-article-rail-item, which assets/article-toc.js looks for and adopts into
+  the rail, so this module always sits directly below the "In this article"
+  panel — in the desktop gutter and in the mobile stack alike.
+
+  Two treatments, matching the two reference designs and switched purely on the
+  rail's own layout mode:
+    rail   — filled card, heading above, tall image, arrows either side
+    inline — outlined card with the label notched into the border, image beside
+             the copy
+
+  With no TOC section on the page nothing adopts it and it renders in place as
+  an ordinary section, so it degrades cleanly.
+
+  Prices come from the product's own price and compare-at price. The suffix
+  ("/month") is a setting, since a subscription price is a merchandising
+  decision rather than something derivable from the variant.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign products = s.products
+-%}
+
+{%- if products.count > 0 -%}
+  <script src="{{ 'editors-pick.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+  <editors-pick
+    class="epick"
+    data-article-rail-item
+    data-rail-order="{{ s.rail_order }}"
+    data-loop="{% if s.loop %}true{% else %}false{% endif %}"
+    data-controls="false"
+    style="
+      --epick-card-bg: {{ s.card_background }};
+      --epick-border: {{ s.border_color }};
+      --epick-label: {{ s.label_color }};
+      --epick-vendor: {{ s.vendor_color }};
+      --epick-title: {{ s.title_color }};
+      --epick-pill-bg: {{ s.pill_background }};
+      --epick-pill-text: {{ s.pill_text_color }};
+      --epick-badge-bg: {{ s.badge_background }};
+      --epick-badge-text: {{ s.badge_text_color }};
+      --epick-radius: {{ s.corner_radius }}px;
+      --epick-label-size: {{ s.label_size }}px;
+      --epick-title-size: {{ s.title_size }}px;
+    "
+    {{ section.shopify_attributes }}
+  >
+    <div class="epick__frame">
+      {%- if s.heading != blank -%}
+        <p class="epick__label">{{ s.heading | escape }}</p>
+      {%- endif -%}
+
+      <div class="epick__stage">
+        <div class="epick__viewport" data-epick-viewport>
+          <ul class="epick__track">
+            {%- for product in products -%}
+              {%- liquid
+                assign variant = product.selected_or_first_available_variant
+                assign price = variant.price | default: product.price_min
+                assign compare = variant.compare_at_price | default: product.compare_at_price_max
+
+                assign has_discount = false
+                if compare > price and price > 0
+                  assign has_discount = true
+                  assign saved = compare | minus: price | times: 100.0 | divided_by: compare | round
+                endif
+              -%}
+              <li class="epick__slide" data-epick-slide>
+                <a class="epick__link" href="{{ product.url }}">
+                  <div class="epick__media">
+                    {%- if product.featured_image -%}
+                      {{
+                        product.featured_image
+                        | image_url: width: 800
+                        | image_tag:
+                          widths: '200, 300, 400, 600, 800',
+                          sizes: '(max-width: 749px) 40vw, 260px',
+                          class: 'epick__image',
+                          loading: 'lazy',
+                          alt: product.featured_image.alt | default: product.title
+                      }}
+                    {%- else -%}
+                      {{ 'product-1' | placeholder_svg_tag: 'epick__image epick__image--placeholder' }}
+                    {%- endif -%}
+
+                    {%- if has_discount and s.show_badge -%}
+                      <span class="epick__badge">{{ saved }}%<br>{{ s.badge_suffix | escape }}</span>
+                    {%- endif -%}
+                  </div>
+
+                  <div class="epick__info">
+                    {%- if s.show_vendor and product.vendor != blank -%}
+                      <span class="epick__vendor">{{ product.vendor | escape }}</span>
+                    {%- endif -%}
+                    <span class="epick__title">{{ product.title | escape }}</span>
+                  </div>
+
+                  <span class="epick__pill">
+                    <span class="epick__price">
+                      {{- price | money -}}
+                      {%- if s.price_suffix != blank -%}{{ s.price_suffix | escape }}{%- endif -%}
+                    </span>
+                    {%- if has_discount -%}
+                      <s class="epick__was">{{ compare | money }}</s>
+                    {%- endif -%}
+                  </span>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+
+        <button
+          class="epick__arrow epick__arrow--prev"
+          type="button"
+          data-epick-arrow="prev"
+          aria-label="{{ 'general.slider.previous' | t | default: 'Previous' }}"
+        >
+          <svg viewBox="0 0 10 16" fill="none" aria-hidden="true" focusable="false">
+            <path d="M8 1L2 8l6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <button
+          class="epick__arrow epick__arrow--next"
+          type="button"
+          data-epick-arrow="next"
+          aria-label="{{ 'general.slider.next' | t | default: 'Next' }}"
+        >
+          <svg viewBox="0 0 10 16" fill="none" aria-hidden="true" focusable="false">
+            <path d="M2 1l6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="epick__dots" data-epick-dots></div>
+    </div>
+  </editors-pick>
+{%- endif -%}
+
+{% stylesheet %}
+  .epick {
+    display: block;
+    font-family: 'sofia-pro', sans-serif;
+  }
+
+  .epick__frame {
+    position: relative;
+  }
+
+  .epick__label {
+    margin: 0;
+    color: var(--epick-label, #3b1e6b);
+    font-size: var(--epick-label-size, 20px);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .epick__stage {
+    position: relative;
+  }
+
+  .epick__viewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .epick__viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .epick__track {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .epick__slide {
+    flex: 0 0 100%;
+    margin: 0;
+    list-style: none;
+    scroll-snap-align: start;
+  }
+
+  .epick__link {
+    display: grid;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .epick__media {
+    position: relative;
+  }
+
+  .epick__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--epick-radius, 16px) * 0.75);
+    object-fit: cover;
+  }
+
+  .epick__image--placeholder {
+    background: rgb(0 0 0 / 4%);
+    fill: rgb(0 0 0 / 12%);
+  }
+
+  .epick__badge {
+    position: absolute;
+    display: grid;
+    place-content: center;
+    border-radius: 50%;
+    background: var(--epick-badge-bg, #486ced);
+    color: var(--epick-badge-text, #ffffff);
+    font-weight: 700;
+    line-height: 1.05;
+    text-align: center;
+  }
+
+  .epick__info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .epick__vendor {
+    color: var(--epick-vendor, #4b3b7a);
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .epick__title {
+    color: var(--epick-title, #3b1e6b);
+    font-size: var(--epick-title-size, 20px);
+    font-weight: 700;
+    line-height: 1.2;
+    text-wrap: pretty;
+  }
+
+  .epick__pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding-block: 0.7em;
+    padding-inline: 1.1em;
+    border-radius: 999px;
+    background: var(--epick-pill-bg, #3b1e5f);
+    color: var(--epick-pill-text, #ffffff);
+    font-size: 1rem;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .epick__price {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .epick__was {
+    opacity: 0.65;
+    text-decoration: line-through;
+  }
+
+  .epick__link:hover .epick__title {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  /* --- Controls ----------------------------------------------------------- */
+  .epick[data-controls='false'] :is(.epick__arrow, .epick__dots) {
+    display: none;
+  }
+
+  .epick__arrow {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    place-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
+    color: var(--epick-title, #3b1e6b);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: opacity var(--animation-speed, 200ms) var(--animation-easing, ease);
+  }
+
+  .epick__arrow svg {
+    width: 10px;
+    height: 16px;
+  }
+
+  .epick__arrow:disabled {
+    cursor: default;
+    opacity: 0.35;
+  }
+
+  .epick__arrow--prev {
+    left: 0;
+  }
+
+  .epick__arrow--next {
+    right: 0;
+  }
+
+  .epick__dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .epick__dot {
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--epick-border, #cfd8ec);
+    cursor: pointer;
+    transition: background-color var(--animation-speed, 200ms) var(--animation-easing, ease);
+  }
+
+  .epick__dot--active {
+    background: var(--epick-pill-bg, #3b1e5f);
+  }
+
+  /* --- Treatment A: filled card, stacked. The desktop rail design. --------- */
+  .article-toc[data-mode='rail'] .epick__frame {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px 20px;
+    border-radius: var(--epick-radius, 16px);
+    background: var(--epick-card-bg, #e6eefb);
+    text-align: center;
+  }
+
+  .article-toc[data-mode='rail'] .epick__link {
+    gap: 16px;
+    justify-items: center;
+  }
+
+  .article-toc[data-mode='rail'] .epick__image {
+    aspect-ratio: 1;
+  }
+
+  /* The arrows straddle the image, as in the design. */
+  .article-toc[data-mode='rail'] .epick__arrow {
+    top: 6.5rem;
+  }
+
+  .article-toc[data-mode='rail'] .epick__arrow--prev {
+    left: -14px;
+  }
+
+  .article-toc[data-mode='rail'] .epick__arrow--next {
+    right: -14px;
+  }
+
+  .article-toc[data-mode='rail'] .epick__viewport {
+    margin-inline: 14px;
+  }
+
+  .article-toc[data-mode='rail'] .epick__badge {
+    top: 8px;
+    right: 8px;
+    width: 62px;
+    height: 62px;
+    font-size: 0.9375rem;
+  }
+
+  .article-toc[data-mode='rail'] .epick__pill {
+    width: 100%;
+  }
+
+  /* --- Treatment B: outlined card with a notched label. The mobile design. - */
+  .article-toc[data-mode='inline'] .epick__frame {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    border: 1.5px solid var(--epick-border, #cfd8ec);
+    border-radius: var(--epick-radius, 16px);
+  }
+
+  /* Notches the label into the top border rather than using a <fieldset>, so the
+     card keeps its own semantics. */
+  .article-toc[data-mode='inline'] .epick__label {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    padding-inline: 8px;
+    background: var(--epick-notch-bg, #ffffff);
+    font-size: calc(var(--epick-label-size, 20px) * 0.85);
+    transform: translateY(-50%);
+  }
+
+  .article-toc[data-mode='inline'] .epick__link {
+    grid-template-columns: minmax(0, 96px) minmax(0, 1fr);
+    gap: 8px 16px;
+    align-items: center;
+  }
+
+  .article-toc[data-mode='inline'] .epick__image {
+    aspect-ratio: 1;
+  }
+
+  .article-toc[data-mode='inline'] .epick__pill {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .article-toc[data-mode='inline'] .epick__badge {
+    top: -6px;
+    right: -6px;
+    width: 46px;
+    height: 46px;
+    font-size: 0.75rem;
+  }
+
+  .article-toc[data-mode='inline'] .epick__arrow {
+    /* Arrows would sit on top of the copy at this size; dots are enough. */
+    display: none;
+  }
+
+  /* Standalone: no TOC adopted it, so give it the outlined treatment too. */
+  .epick:not(.article-toc *) .epick__frame {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: var(--normal-content-width);
+    margin-inline: auto;
+    padding: 20px;
+    border: 1.5px solid var(--epick-border, #cfd8ec);
+    border-radius: var(--epick-radius, 16px);
+  }
+
+  .epick:not(.article-toc *) .epick__link {
+    grid-template-columns: minmax(0, 120px) minmax(0, 1fr);
+    gap: 8px 16px;
+    align-items: center;
+  }
+
+  .epick:not(.article-toc *) .epick__pill {
+    grid-column: 1 / -1;
+  }
+
+  .epick:not(.article-toc *) .epick__badge {
+    top: -6px;
+    right: -6px;
+    width: 48px;
+    height: 48px;
+    font-size: 0.8125rem;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Article editor's pick",
+  "tag": "aside",
+  "class": "section-editors-pick",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Sits directly below the \"In this article\" panel — in the gutter on desktop, and above the article body on mobile. Hidden when no products are chosen."
+    },
+    {
+      "type": "product_list",
+      "id": "products",
+      "label": "Products",
+      "limit": 6,
+      "info": "Shown as a carousel when more than one is chosen."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Label",
+      "default": "Editor's Pick"
+    },
+    {
+      "type": "select",
+      "id": "rail_order",
+      "label": "Position",
+      "info": "Relative to the table of contents.",
+      "options": [
+        {
+          "value": "after",
+          "label": "Below the table of contents"
+        },
+        {
+          "value": "before",
+          "label": "Above the table of contents"
+        }
+      ],
+      "default": "after"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show brand name",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "price_suffix",
+      "label": "Price suffix",
+      "info": "Appended to the price, e.g. \"/month\". Leave blank for none.",
+      "default": "/month"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "Show discount badge",
+      "info": "Appears only when the product has a compare-at price.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "badge_suffix",
+      "label": "Badge wording",
+      "default": "OFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "loop",
+      "label": "Loop the carousel",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background (desktop rail)",
+      "default": "#E6EEFB"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border and inactive dots",
+      "default": "#CFD8EC"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label",
+      "default": "#3B1E6B"
+    },
+    {
+      "type": "color",
+      "id": "vendor_color",
+      "label": "Brand name",
+      "default": "#4B3B7A"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Product title",
+      "default": "#3B1E6B"
+    },
+    {
+      "type": "color",
+      "id": "pill_background",
+      "label": "Price pill background",
+      "default": "#3B1E5F"
+    },
+    {
+      "type": "color",
+      "id": "pill_text_color",
+      "label": "Price pill text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "badge_background",
+      "label": "Discount badge",
+      "default": "#486CED"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Discount badge text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Size"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "label": "Label size",
+      "min": 14,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Product title size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Article editor's pick"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["article"]
+  }
+}
+{% endschema %}

@@ -122,6 +122,30 @@
         "padding-block-end": 80
       }
     },
+    "editors_pick": {
+      "type": "article-editors-pick",
+      "settings": {
+        "heading": "Editor's Pick",
+        "rail_order": "after",
+        "show_vendor": true,
+        "price_suffix": "/month",
+        "show_badge": true,
+        "badge_suffix": "OFF",
+        "loop": false,
+        "card_background": "#E6EEFB",
+        "border_color": "#CFD8EC",
+        "label_color": "#3B1E6B",
+        "vendor_color": "#4B3B7A",
+        "title_color": "#3B1E6B",
+        "pill_background": "#3B1E5F",
+        "pill_text_color": "#FFFFFF",
+        "badge_background": "#486CED",
+        "badge_text_color": "#FFFFFF",
+        "label_size": 20,
+        "title_size": 20,
+        "corner_radius": 16
+      }
+    },
     "article_toc": {
       "type": "article-toc-panel",
       "settings": {
@@ -154,6 +178,7 @@
   "order": [
     "blog_hero",
     "section",
-    "article_toc"
+    "article_toc",
+    "editors_pick"
   ]
 }

@@ -178,6 +178,24 @@
     --font-h6--spacing: var(--font-heading--spacing);
     --font-paragraph--spacing: 0.5em;
 
+    {% comment %}
+      Article body typography, from the "Article typography" theme settings.
+      Declared here because {% stylesheet %} blocks in sections and blocks are
+      not run through Liquid, so they can't read settings themselves — they
+      consume these custom properties instead.
+      Used by blocks/_blog-post-content.liquid.
+    {% endcomment %}
+    --article-heading-color: {{ settings.article_heading_color }};
+    --article-text-color: {{ settings.article_text_color }};
+    --article-link-color: {{ settings.article_link_color }};
+    --article-link-hover-color: {{ settings.article_link_hover_color }};
+    --article-strong-color: {{ settings.article_strong_color }};
+    --article-body-size: {{ settings.article_body_size }}px;
+    --article-body-line-height: {{ settings.article_body_line_height | divided_by: 100.0 }};
+    --article-h2-size: {{ settings.article_h2_size }}px;
+    --article-h2-size-mobile: {{ settings.article_h2_size_mobile }}px;
+    --article-h3-size: {{ settings.article_h3_size }}px;
+
     /* Heading colors */
     --font-h1--color: var(--color-foreground-heading);
     --font-h2--color: var(--color-foreground-heading);
