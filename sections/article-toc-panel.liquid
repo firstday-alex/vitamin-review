@@ -133,8 +133,8 @@
     max-height: calc(100vh - var(--article-toc-anchor) - var(--article-toc-top, 32px));
     overflow-y: auto;
     overscroll-behavior: contain;
+    visibility: visible;
     opacity: 1;
-    transition: opacity var(--animation-speed, 200ms) var(--animation-easing, ease);
     scrollbar-width: thin;
   }
 
@@ -143,10 +143,15 @@
     --article-toc-anchor: calc(var(--header-height, 0px) + var(--article-toc-top, 32px));
   }
 
-  /* Hidden unless article-toc.js has confirmed the copy is alongside it. Keyed on
-     "not true" rather than "false" so the rail starts hidden and fades in, never
-     appearing over the hero for a frame while the script catches up. */
+  /* Hidden only while it would sit over whatever is above the article. Keyed on
+     "not true" rather than "false" so it starts hidden and appears the moment the
+     script confirms its position, instead of flashing over the hero first.
+
+     No transition: the panel should just be there beside the copy. Layout is
+     kept (visibility, not display) so the adopted carousel can still measure
+     its slides while hidden. */
   .article-toc[data-mode='rail']:not([data-in-view='true']) {
+    visibility: hidden;
     pointer-events: none;
     opacity: 0;
   }
@@ -266,8 +271,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .article-toc__chevron,
-    .article-toc[data-mode='rail'] {
+    .article-toc__chevron {
       transition: none;
     }
   }
