@@ -12,6 +12,8 @@
     "blog_hero": {
       "type": "blog-hero",
       "settings": {
+        "badge_text": "",
+        "heading": "",
         "heading_tag": "h1",
         "partnership_text": "In Partnership with First Day",
         "show_date": true,
@@ -19,25 +21,82 @@
         "date_format": "%b %-d, %Y",
         "show_author": true,
         "byline_label": "written by",
+        "author_name": "",
         "avatar_size": 44,
         "avatar_size_mobile": 64,
         "image_position": "right",
         "image_ratio": "1",
         "image_radius": 20,
-        "background_color": "#EFEDFD",
-        "heading_color": "#3B1E6B",
-        "text_color": "#3B1E6B",
-        "badge_background": "#486CED",
-        "badge_text_color": "#FFFFFF",
+        "background_color": "#efedfd",
+        "heading_color": "#3b1e6b",
+        "text_color": "#3b1e6b",
+        "badge_background": "#486ced",
+        "badge_text_color": "#ffffff",
         "heading_size": 48,
         "heading_size_mobile": 30,
+        "text_max_width": 520,
         "max_width": 1400,
         "column_gap": 64,
-        "text_max_width": 520,
         "padding_top": 72,
         "padding_bottom": 72,
         "padding_top_mobile": 32,
         "padding_bottom_mobile": 32
+      }
+    },
+    "article_toc": {
+      "type": "article-toc-panel",
+      "settings": {
+        "heading": "In this article",
+        "include_h3": false,
+        "show_numbers": true,
+        "min_headings": 2,
+        "side": "left",
+        "panel_width": 320,
+        "top_offset": 32,
+        "scroll_offset": 80,
+        "inline_spacing": 24,
+        "hide_out_of_view": true,
+        "open_on_desktop": false,
+        "open_on_mobile": false,
+        "header_background": "#3b1e5f",
+        "header_text": "#ffffff",
+        "body_background": "#efebfb",
+        "text_color": "#2e1a47",
+        "number_color": "#8b7bb8",
+        "divider_color": "#d9d0f0",
+        "active_color": "#5b3fa8",
+        "heading_size": 20,
+        "font_size": 16,
+        "corner_radius": 16,
+        "content_selector": ".blog-post-content"
+      }
+    },
+    "editors_pick": {
+      "type": "article-editors-pick",
+      "settings": {
+        "products": [
+          "kids-enrichment-vitamin",
+          "teens-calming-magnesium"
+        ],
+        "heading": "Editor's Pick",
+        "rail_order": "after",
+        "show_vendor": true,
+        "price_suffix": "/month",
+        "show_badge": true,
+        "badge_suffix": "OFF",
+        "loop": true,
+        "card_background": "#e6eefb",
+        "border_color": "#cfd8ec",
+        "label_color": "#3b1e6b",
+        "vendor_color": "#4b3b7a",
+        "title_color": "#3b1e6b",
+        "pill_background": "#3b1e5f",
+        "pill_text_color": "#ffffff",
+        "badge_background": "#486ced",
+        "badge_text_color": "#ffffff",
+        "label_size": 20,
+        "title_size": 20,
+        "corner_radius": 16
       }
     },
     "section": {
@@ -121,64 +180,12 @@
         "padding-block-start": 40,
         "padding-block-end": 80
       }
-    },
-    "editors_pick": {
-      "type": "article-editors-pick",
-      "settings": {
-        "heading": "Editor's Pick",
-        "rail_order": "after",
-        "show_vendor": true,
-        "price_suffix": "/month",
-        "show_badge": true,
-        "badge_suffix": "OFF",
-        "loop": false,
-        "card_background": "#E6EEFB",
-        "border_color": "#CFD8EC",
-        "label_color": "#3B1E6B",
-        "vendor_color": "#4B3B7A",
-        "title_color": "#3B1E6B",
-        "pill_background": "#3B1E5F",
-        "pill_text_color": "#FFFFFF",
-        "badge_background": "#486CED",
-        "badge_text_color": "#FFFFFF",
-        "label_size": 20,
-        "title_size": 20,
-        "corner_radius": 16
-      }
-    },
-    "article_toc": {
-      "type": "article-toc-panel",
-      "settings": {
-        "heading": "In this article",
-        "include_h3": false,
-        "show_numbers": true,
-        "min_headings": 2,
-        "side": "left",
-        "panel_width": 320,
-        "top_offset": 32,
-        "scroll_offset": 80,
-        "inline_spacing": 24,
-        "hide_out_of_view": true,
-        "open_on_desktop": true,
-        "open_on_mobile": false,
-        "header_background": "#3B1E5F",
-        "header_text": "#FFFFFF",
-        "body_background": "#EFEBFB",
-        "text_color": "#2E1A47",
-        "number_color": "#8B7BB8",
-        "divider_color": "#D9D0F0",
-        "active_color": "#5B3FA8",
-        "heading_size": 20,
-        "font_size": 16,
-        "corner_radius": 16,
-        "content_selector": ".blog-post-content"
-      }
     }
   },
   "order": [
     "blog_hero",
-    "section",
     "article_toc",
-    "editors_pick"
+    "editors_pick",
+    "section"
   ]
 }
