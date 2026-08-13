@@ -55,7 +55,7 @@
         "top_offset": 32,
         "scroll_offset": 80,
         "inline_spacing": 24,
-        "hide_out_of_view": true,
+        "hide_out_of_view": false,
         "open_on_desktop": false,
         "open_on_mobile": false,
         "header_background": "#3b1e5f",
