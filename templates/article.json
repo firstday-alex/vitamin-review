@@ -83,6 +83,8 @@
         "destination_namespace": "custom",
         "destination_key": "destination_url",
         "show_vendor": true,
+        "brand_text": "First Day",
+        "use_subscription_price": true,
         "price_suffix": "/month",
         "show_badge": true,
         "badge_suffix": "OFF",

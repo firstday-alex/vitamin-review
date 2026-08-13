@@ -70,8 +70,41 @@
             {%- for product in products -%}
               {%- liquid
                 assign variant = product.selected_or_first_available_variant
-                assign price = variant.price | default: product.price_min
-                assign compare = variant.compare_at_price | default: product.compare_at_price_max
+                assign one_time_price = variant.price | default: product.price_min
+
+                assign price = one_time_price
+                assign compare = variant.compare_at_price | default: product.compare_at_price_max | default: 0
+                assign is_subscription = false
+                assign brand_name = s.brand_text | default: product.vendor
+
+                # Prefer the subscription price when the product sells on a plan:
+                # that is the "$23.40/month" figure, with the one-time price as the
+                # struck-through "was". Reading variant.price alone showed the full
+                # price with a /month suffix, which misstates it.
+                if s.use_subscription_price
+                  assign plan_price = 0
+                  assign plan_compare = 0
+
+                  for allocation in variant.selling_plan_allocations
+                    if plan_price == 0 or allocation.price < plan_price
+                      assign plan_price = allocation.price
+                      assign plan_compare = allocation.compare_at_price | default: 0
+                    endif
+                  endfor
+
+                  # Only adopt it if it actually beats buying once, so a plan that
+                  # isn't a saving can't invent a discount.
+                  if plan_price > 0 and plan_price < one_time_price
+                    assign price = plan_price
+                    assign is_subscription = true
+
+                    if plan_compare > plan_price
+                      assign compare = plan_compare
+                    else
+                      assign compare = one_time_price
+                    endif
+                  endif
+                endif
 
                 assign has_discount = false
                 if compare > price and price > 0
@@ -142,8 +175,8 @@
                   </div>
 
                   <div class="epick__info">
-                    {%- if s.show_vendor and product.vendor != blank -%}
-                      <span class="epick__vendor">{{ product.vendor | escape }}</span>
+                    {%- if s.show_vendor and brand_name != blank -%}
+                      <span class="epick__vendor">{{ brand_name | escape }}</span>
                     {%- endif -%}
                     <span class="epick__title">{{ product.title | escape }}</span>
                   </div>
@@ -151,7 +184,9 @@
                   <span class="epick__pill">
                     <span class="epick__price">
                       {{- price | money -}}
-                      {%- if s.price_suffix != blank -%}{{ s.price_suffix | escape }}{%- endif -%}
+                      {%- if s.price_suffix != blank and is_subscription -%}
+                        {{- s.price_suffix | escape -}}
+                      {%- endif -%}
                     </span>
                     {%- if has_discount -%}
                       <s class="epick__was">{{ compare | money }}</s>
@@ -589,9 +624,23 @@
     },
     {
       "type": "text",
+      "id": "brand_text",
+      "label": "Brand name",
+      "info": "Shown above the product title. Leave blank to use each product's vendor.",
+      "default": "First Day"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_subscription_price",
+      "label": "Show the subscription price",
+      "info": "Uses the product's cheapest selling plan price, with the one-time price struck through. Falls back to the one-time price when the product has no plan.",
+      "default": true
+    },
+    {
+      "type": "text",
       "id": "price_suffix",
       "label": "Price suffix",
-      "info": "Appended to the price, e.g. \"/month\". Leave blank for none.",
+      "info": "Appended only to subscription prices, e.g. \"/month\". Leave blank for none.",
       "default": "/month"
     },
     {
