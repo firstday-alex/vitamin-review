@@ -18,14 +18,23 @@
   Prices come from the product's own price and compare-at price. The suffix
   ("/month") is a setting, since a subscription price is a merchandising
   decision rather than something derivable from the variant.
+
+  Each card links to the product's destination_url metafield when one is set,
+  and to the product page otherwise. Create the definition in Shopify admin as
+  Settings > Custom data > Products, namespace and key `custom.destination_url`,
+  type URL (single line text also works). The namespace and key are settings
+  below if yours differ.
 {%- endcomment -%}
 
 {%- liquid
   assign s = section.settings
   assign products = s.products
+
+  assign dest_namespace = s.destination_namespace | default: 'custom'
+  assign dest_key = s.destination_key | default: 'destination_url'
 -%}
 
-{%- if products.count > 0 -%}
+{%- if products.size > 0 -%}
   <script src="{{ 'editors-pick.js' | asset_url }}" type="module" fetchpriority="low"></script>
 
   <editors-pick
@@ -69,9 +78,40 @@
                   assign has_discount = true
                   assign saved = compare | minus: price | times: 100.0 | divided_by: compare | round
                 endif
+
+                # Send the card to the product's destination_url metafield when it
+                # has one, falling back to the product page.
+                #
+                # Only an explicit http(s):// URL or a path rooted at this domain is
+                # accepted. That rules out javascript:/data: values, and also
+                # protocol-relative "//host" ones, which look like a local path but
+                # leave the site — an off-site link has to say https:// out loud.
+                assign link_url = product.url
+                assign destination = product.metafields[dest_namespace][dest_key].value | strip
+
+                if destination != blank
+                  assign dest_ok = false
+                  assign dest_http = destination | slice: 0, 7
+                  assign dest_https = destination | slice: 0, 8
+
+                  if dest_http == 'http://' or dest_https == 'https://'
+                    assign dest_ok = true
+                  else
+                    assign dest_first = destination | slice: 0, 1
+                    assign dest_two = destination | slice: 0, 2
+
+                    if dest_first == '/' and dest_two != '//'
+                      assign dest_ok = true
+                    endif
+                  endif
+
+                  if dest_ok
+                    assign link_url = destination
+                  endif
+                endif
               -%}
               <li class="epick__slide" data-epick-slide>
-                <a class="epick__link" href="{{ product.url }}">
+                <a class="epick__link" href="{{ link_url }}">
                   <div class="epick__media">
                     {%- if product.featured_image -%}
                       {{
@@ -508,6 +548,26 @@
         }
       ],
       "default": "after"
+    },
+    {
+      "type": "header",
+      "content": "Link destination"
+    },
+    {
+      "type": "paragraph",
+      "content": "Cards link to each product's destination_url metafield when it is set, and to the product page when it isn't. Create the metafield under Settings > Custom data > Products with type URL."
+    },
+    {
+      "type": "text",
+      "id": "destination_namespace",
+      "label": "Metafield namespace",
+      "default": "custom"
+    },
+    {
+      "type": "text",
+      "id": "destination_key",
+      "label": "Metafield key",
+      "default": "destination_url"
     },
     {
       "type": "header",

@@ -80,6 +80,8 @@
         ],
         "heading": "Editor's Pick",
         "rail_order": "after",
+        "destination_namespace": "custom",
+        "destination_key": "destination_url",
         "show_vendor": true,
         "price_suffix": "/month",
         "show_badge": true,
