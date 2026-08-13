@@ -89,6 +89,14 @@
                 assign link_url = product.url
                 assign destination = product.metafields[dest_namespace][dest_key].value | strip
 
+                # Belt and braces: if the dynamic namespace/key lookup above comes
+                # back empty while the settings still point at the default field,
+                # read it by its literal path too. Costs nothing and removes the
+                # lookup itself as a suspect when a value is set but not showing.
+                if destination == blank and dest_namespace == 'custom' and dest_key == 'destination_url'
+                  assign destination = product.metafields.custom.destination_url.value | strip
+                endif
+
                 if destination != blank
                   assign dest_ok = false
                   assign dest_http = destination | slice: 0, 7
